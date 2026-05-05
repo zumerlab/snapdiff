@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>snapDiff demo</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 32px; background: #f4f5f7;
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: #1a1d24;
+  }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  p.lead { margin: 0 0 24px; opacity: .75; max-width: 640px; }
+  .toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+    padding: 12px; background: white; border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .toolbar button {
+    background: #2f6df6; color: white; border: 0; padding: 8px 14px;
+    border-radius: 6px; font-weight: 600; cursor: pointer;
+  }
+  .toolbar button.secondary { background: #1a1d24; }
+  .toolbar button.danger { background: #d63d4d; }
+  .toolbar label { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #d8dce3; border-radius: 6px; background: white; font-size: 12px; }
+  .grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card {
+    background: white; padding: 20px; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .card h2 { margin: 0 0 8px; font-size: 14px; }
+
+  /* === Fixture: hero === */
+  .hero {
+    background: linear-gradient(135deg, #6f5cff, #2f6df6);
+    color: white; padding: 28px; border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(47, 109, 246, .35);
+  }
+  .hero .badge {
+    display: inline-block; padding: 3px 10px; background: rgba(255,255,255,.18);
+    border-radius: 999px; font-size: 11px; letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .hero h3 { margin: 10px 0 4px; font-size: 20px; }
+  .hero p { margin: 0; opacity: .85; font-size: 13px; }
+
+  /* === Fixture: pricing === */
+  .pricing { display: grid; gap: 8px; }
+  .pricing .row {
+    display: flex; justify-content: space-between; padding: 10px 12px;
+    background: #f9fafb; border-radius: 6px; border: 1px solid #e6e8ee;
+  }
+  .pricing .row strong { font-variant-numeric: tabular-nums; }
+  .pricing .row.highlight { background: #fff8e1; border-color: #f5d877; }
+
+  /* === Fixture: avatar === */
+  .avatar-row { display: flex; gap: 12px; align-items: center; }
+  .avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: conic-gradient(from 220deg, #ff8a3d, #d63d4d, #6f5cff, #2f6df6, #ff8a3d);
+    display: grid; place-items: center; color: white; font-weight: 700; font-size: 22px;
+    box-shadow: inset 0 0 0 3px white, 0 4px 12px rgba(0,0,0,.15);
+  }
+  .avatar-meta strong { display: block; }
+  .avatar-meta span { opacity: .7; font-size: 12px; }
+
+  /* Mutation styles, applied via toggle */
+  body.mutated .hero { background: linear-gradient(135deg, #d63d4d, #ff8a3d); }
+  body.mutated .hero h3::after { content: ' (sale!)'; }
+  body.mutated .pricing .row:nth-child(2) strong { color: #d63d4d; }
+  body.mutated .pricing .row.highlight { background: #ffe5d0; border-color: #ff8a3d; }
+  body.mutated .avatar-meta strong::after { content: ' Pro'; color: #6f5cff; }
+</style>
+</head>
+<body>
+<h1>snapDiff demo</h1>
+<p class="lead">
+  Visual regression tests that run entirely in the browser.
+  snapdom captures each fixture, snapDiff diffs against the IndexedDB baseline
+  and shows the result in an overlay. No Node, no Puppeteer.
+</p>
+
+<div class="toolbar">
+  <button id="run">Run tests</button>
+  <button id="mutate" class="secondary">Toggle mutation</button>
+  <button id="reset" class="danger">Clear baselines</button>
+  <label><input type="checkbox" id="includeAA" /> count anti-aliasing</label>
+  <label>threshold <input type="range" id="threshold" min="0" max="0.5" step="0.01" value="0.1" /> <span id="thresholdVal">0.10</span></label>
+</div>
+
+<div class="grid">
+  <div class="card" data-test="hero">
+    <h2>Hero</h2>
+    <div class="hero">
+      <span class="badge">New</span>
+      <h3>Ship faster</h3>
+      <p>Capture, diff and review — all client-side.</p>
+    </div>
+  </div>
+  <div class="card" data-test="pricing">
+    <h2>Pricing rows</h2>
+    <div class="pricing">
+      <div class="row"><span>Hobby</span><strong>$0</strong></div>
+      <div class="row highlight"><span>Pro</span><strong>$19</strong></div>
+      <div class="row"><span>Team</span><strong>$49</strong></div>
+    </div>
+  </div>
+  <div class="card" data-test="avatar">
+    <h2>Avatar</h2>
+    <div class="avatar-row">
+      <div class="avatar">JM</div>
+      <div class="avatar-meta">
+        <strong>Juan Martin</strong>
+        <span>zumerlab</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { snapdom } from 'https://esm.sh/@zumer/snapdom@2.9.0'
+  import { createRunner, Reporter } from '../src/index.js'
+
+  // Build runner once. Tests reference DOM elements by data-test attribute.
+  const runner = createRunner({
+    snapdom,
+    namespace: 'demo',
+    threshold: 0.1,
+    failureRatio: 0,
+    snapdomOptions: { embedFonts: true },
+  })
+
+  runner.test('hero', () => document.querySelector('[data-test="hero"]'))
+  runner.test('pricing', () => document.querySelector('[data-test="pricing"]'))
+  runner.test('avatar', () => document.querySelector('[data-test="avatar"]'))
+
+  const reporter = new Reporter(runner, { onClose: () => {} })
+
+  document.getElementById('run').onclick = async () => {
+    runner.threshold = parseFloat(document.getElementById('threshold').value)
+    reporter.mount()
+    await reporter.runAndShow()
+  }
+
+  document.getElementById('mutate').onclick = () => {
+    document.body.classList.toggle('mutated')
+  }
+
+  document.getElementById('reset').onclick = async () => {
+    if (!confirm('Delete all baselines for namespace "demo"?')) return
+    await runner.store.clear()
+    alert('Baselines cleared. Run again to record fresh ones.')
+  }
+
+  const thr = document.getElementById('threshold')
+  const thrVal = document.getElementById('thresholdVal')
+  thr.oninput = () => thrVal.textContent = parseFloat(thr.value).toFixed(2)
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.DS_Store
+__snapshots__/visual/_artifacts/
+__snapshots__/visual/report.html
+.vitest-cache/
+.claude
