@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# snapDiff
+# SnapDIFF
 
 **Visual regression testing that runs entirely in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
 
