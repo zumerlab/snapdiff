@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://github.com/zumerlab/snapdiff">
+    <img src="https://raw.githubusercontent.com/zumerlab/snapdiff/main/docs/assets/snapdiff.jpg" width="80%">
+  </a>
+</p>
+
 # snapDiff
 
 **Visual regression testing that runs entirely in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
@@ -34,10 +40,16 @@ Each tier is a **complete product for a real audience**, not a stepping stone to
 ## Install
 
 ```sh
+npm install --save-dev @zumer/snapdiff
+```
+
+`@zumer/snapdom` is declared as a peer dependency and auto-installs with npm 7+, pnpm and yarn 2+. On older tooling, add it explicitly:
+
+```sh
 npm install --save-dev @zumer/snapdiff @zumer/snapdom
 ```
 
-`@zumer/snapdom` is a peer dependency. Tier 1 via script tag also works without `npm install` — point at unpkg directly.
+Tier 1 via script tag needs no install at all — point at unpkg directly (snapdom is loaded from the CDN at runtime).
 
 ---
 
