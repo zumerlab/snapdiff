@@ -19,7 +19,7 @@ import path from 'node:path'
  *
  * @param {object} [opts]
  * @param {string} [opts.baselineDir='__snapshots__/visual']
- * @param {string} [opts.sourceDir='demo/components']
+ * @param {string} [opts.sourceDir='docs/components']
  * @param {string} [opts.sourceExt='.html']
  * @returns {Promise<{ stale: StaleEntry[], orphans: string[], unrecorded: string[] }>}
  *   stale:      sources newer than their matching baseline (the actionable case)
@@ -28,7 +28,7 @@ import path from 'node:path'
  */
 export async function checkStaleness({
   baselineDir = '__snapshots__/visual',
-  sourceDir = 'demo/components',
+  sourceDir = 'docs/components',
   sourceExt = '.html',
 } = {}) {
   const baselines = await readMtimes(baselineDir, '.png')

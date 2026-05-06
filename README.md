@@ -113,7 +113,7 @@ npm install
 npm run demo
 ```
 
-Open `http://localhost:3000/demo/` — a hub with three live examples:
+Open `http://localhost:3000/docs/` — a hub with three live examples:
 
 - **Mutation toggle** — explicit `runner.test()` calls, button to introduce visual drift
 - **Auto-discover** — zero-JS, just `<script data-auto>` + `data-snap` attrs
@@ -147,7 +147,7 @@ npx snapdiff-stale
 Re-record stale baselines now? [y/N]
 ```
 
-Defaults to `__snapshots__/visual/*.png` ↔ `demo/components/*.html`, matching by base name. Reports three categories:
+Defaults to `__snapshots__/visual/*.png` ↔ `docs/components/*.html`, matching by base name. Reports three categories:
 
 - **Stale** — source modified after baseline (the actionable case; CLI offers to re-record)
 - **Unrecorded** — source has no baseline yet (never been tested)
@@ -160,7 +160,7 @@ Only **stale** entries count toward the `--strict` exit code. Unrecorded and orp
 | flag | meaning |
 |---|---|
 | `--baseline <dir>` | baseline directory (default `__snapshots__/visual`) |
-| `--source <dir>` | source directory (default `demo/components`) |
+| `--source <dir>` | source directory (default `docs/components`) |
 | `--ext <.ext>` | source file extension (default `.html`) |
 | `--unattended` | no prompts; just print and exit |
 | `--strict` | exit 1 if anything is stale (CI gate) |
@@ -173,7 +173,7 @@ import { checkStaleness } from '@zumer/snapdiff/stale'
 
 const { stale, orphans, unrecorded } = await checkStaleness({
   baselineDir: '__snapshots__/visual',
-  sourceDir: 'demo/components',
+  sourceDir: 'docs/components',
   sourceExt: '.html',
 })
 ```

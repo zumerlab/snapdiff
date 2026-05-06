@@ -103,8 +103,8 @@
 
 <script type="module">
 import { snapdom } from 'https://esm.sh/@zumer/snapdom'
-import { createRunner, Reporter } from '../src/index.js'
-import { captureFromIframe } from '../vitest/iframe-capture.js'
+import { createRunner, Reporter } from './lib/snapdiff.mjs'
+import { captureFromIframe } from './lib/iframe-capture.js'
 
 const FOLDER = './components'
 const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom'
@@ -164,7 +164,7 @@ function renderProgress(done, total, label) {
 }
 
 const components = await listComponents()
-renderStatus(`Found ${components.length} component(s) in ${FOLDER}/`)
+renderStatus(`Found ${components.length} component(s) in ${FOLDER}/ — click "Run tests" to start.`)
 
 const iframe = document.createElement('iframe')
 iframe.className = 'test-frame'
@@ -225,8 +225,6 @@ document.getElementById('clear').onclick = async () => {
   await runner.store.clear()
   renderStatus('Baselines cleared. Click Run tests to record fresh ones.')
 }
-
-runAll()
 </script>
 </body>
 </html>

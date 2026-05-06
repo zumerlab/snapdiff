@@ -3,7 +3,7 @@ const globals = require('globals')
 
 module.exports = [
   {
-    ignores: ['dist/**', 'node_modules/**', 'demo/snapdom.mjs', '__snapshots__/**'],
+    ignores: ['dist/**', 'node_modules/**', 'docs/lib/**', '__snapshots__/**'],
   },
   js.configs.recommended,
   {

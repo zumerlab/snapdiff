@@ -39,7 +39,7 @@ Usage:
 
 Options:
   --baseline <dir>   baseline directory (default: __snapshots__/visual)
-  --source <dir>     source directory (default: demo/components)
+  --source <dir>     source directory (default: docs/components)
   --ext <.ext>       source file extension (default: .html)
   --unattended       no prompts, just print
   --strict           exit 1 if any baseline is stale (for CI gates)

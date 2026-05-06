@@ -36,6 +36,7 @@
   ],
   "scripts": {
     "compile": "node esbuild.config.mjs",
+    "postcompile": "mkdir -p docs/lib && cp dist/snapdiff.mjs dist/snapdiff-auto.js docs/lib/ && cp vitest/iframe-capture.js docs/lib/",
     "lint": "eslint src vitest __tests__ bin --ext .js",
     "lint:fix": "eslint src vitest __tests__ bin --ext .js --fix",
     "test": "npm run lint:fix && npx vitest run --browser.headless --reporter=verbose",
