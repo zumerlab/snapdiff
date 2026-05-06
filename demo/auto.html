@@ -2,35 +2,56 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>snapDiff auto-discover demo</title>
-<style>
-  :root { color-scheme: light; }
-  body {
-    margin: 0; padding: 32px; background: #f4f5f7;
-    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
-    color: #1a1d24;
-  }
-  h1 { margin: 0 0 8px; font-size: 22px; }
-  p.lead { margin: 0 0 24px; opacity: .75; max-width: 640px; }
-  .toolbar {
-    display: flex; gap: 8px; margin-bottom: 24px;
-    padding: 12px; background: white; border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  }
-  .toolbar button {
-    background: #1a1d24; color: white; border: 0; padding: 8px 14px;
-    border-radius: 6px; font-weight: 600; cursor: pointer;
-  }
-  .grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-  .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .card > h2 { margin: 0 0 12px; font-size: 14px; }
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Drop a tag — snapDiff demo</title>
 
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+<link rel="stylesheet" href="./shared.css" />
+
+<style>
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 14px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── Fixtures grid ── */
+  .grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .fixture {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .fixture > h2 {
+    margin: 0 0 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  /* ─── Captured fixtures (don't restyle) ─── */
   .hero {
     background: linear-gradient(135deg, #6f5cff, #2f6df6);
     color: white; padding: 24px; border-radius: 10px;
     box-shadow: 0 8px 24px rgba(47,109,246,.35);
   }
-  .hero h3 { margin: 0 0 4px; font-size: 18px; }
+  .hero h3 { margin: 0 0 4px; font-size: 18px; font-family: 'DM Sans', sans-serif; }
   .hero p { margin: 0; opacity: .85; font-size: 13px; }
 
   .pricing { display: grid; gap: 6px; }
@@ -38,11 +59,12 @@
     display: flex; justify-content: space-between;
     padding: 10px 12px; background: #f9fafb;
     border: 1px solid #e6e8ee; border-radius: 6px;
+    color: #1a1d24;
   }
   .pricing .row strong { font-variant-numeric: tabular-nums; }
   .pricing .row.highlight { background: #fff8e1; border-color: #f5d877; }
 
-  .avatar-row { display: flex; gap: 12px; align-items: center; }
+  .avatar-row { display: flex; gap: 12px; align-items: center; color: #1a1d24; }
   .avatar {
     width: 56px; height: 56px; border-radius: 50%;
     background: conic-gradient(from 220deg, #ff8a3d, #d63d4d, #6f5cff, #2f6df6, #ff8a3d);
@@ -56,49 +78,67 @@
 </head>
 <body>
 
-<h1>snapDiff auto-discover demo</h1>
-<p class="lead">
-  This page has zero user JavaScript. The single <code>&lt;script&gt;</code> tag at the bottom
-  finds elements with <code>data-snap</code>, captures them, diffs against IndexedDB baselines,
-  and shows a badge in the bottom-right corner. Click the badge for the full reporter.
-</p>
+<section class="hero-block compact">
+  <img src="./assets/mrsnapdom-pose.png" alt="Mr SnapDOM pointing up" class="hero-mascot" width="110" height="120" />
+  <h1><span class="accent">01</span> <span class="accent-ink">Drop a tag</span></h1>
+  <p class="tagline">
+    <em>Zero JS</em> from you. One <code>&lt;script data-auto&gt;</code> tag finds every
+    <code>data-snap</code> element, captures, diffs, and parks a badge in the corner.
+  </p>
+</section>
 
-<div class="toolbar">
-  <button onclick="document.body.classList.toggle('mutated'); location.reload();">
-    Toggle mutation + reload
-  </button>
-  <button onclick="indexedDB.deleteDatabase('snapDiff'); location.reload();">
-    Clear baselines + reload
-  </button>
-</div>
+<div class="section-label">Controls</div>
 
-<div class="grid">
-  <div class="card" data-snap="hero">
-    <h2>Hero</h2>
-    <div class="hero">
-      <h3>Ship faster</h3>
-      <p>Capture, diff and review — all client-side.</p>
-    </div>
+<main class="page-main">
+  <div class="toolbar">
+    <button class="btn btn-ink" onclick="document.body.classList.toggle('mutated'); location.reload();">
+      <i class="fas fa-shuffle"></i> Toggle mutation + reload
+    </button>
+    <button class="btn btn-danger" onclick="indexedDB.deleteDatabase('snapDiff'); location.reload();">
+      <i class="fas fa-trash"></i> Clear baselines + reload
+    </button>
   </div>
-  <div class="card" data-snap="pricing">
-    <h2>Pricing rows</h2>
-    <div class="pricing">
-      <div class="row"><span>Hobby</span><strong>$0</strong></div>
-      <div class="row highlight"><span>Pro</span><strong>$19</strong></div>
-      <div class="row"><span>Team</span><strong>$49</strong></div>
+
+  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Fixtures</div>
+
+  <div class="grid">
+    <div class="fixture" data-snap="hero">
+      <h2>Hero</h2>
+      <div class="hero">
+        <h3>Ship faster</h3>
+        <p>Capture, diff and review — all client-side.</p>
+      </div>
     </div>
-  </div>
-  <div class="card" data-snap="avatar">
-    <h2>Avatar</h2>
-    <div class="avatar-row">
-      <div class="avatar">JM</div>
-      <div>
-        <strong>Juan Martin</strong>
-        <div style="opacity:.7;font-size:12px">zumerlab</div>
+    <div class="fixture" data-snap="pricing">
+      <h2>Pricing rows</h2>
+      <div class="pricing">
+        <div class="row"><span>Hobby</span><strong>$0</strong></div>
+        <div class="row highlight"><span>Pro</span><strong>$19</strong></div>
+        <div class="row"><span>Team</span><strong>$49</strong></div>
+      </div>
+    </div>
+    <div class="fixture" data-snap="avatar">
+      <h2>Avatar</h2>
+      <div class="avatar-row">
+        <div class="avatar">JM</div>
+        <div>
+          <strong>Juan Martin</strong>
+          <div style="opacity:.7;font-size:12px">zumerlab</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
+
+<nav class="page-nav">
+  <a href="./">Demos</a>
+  <a href="./auto.html" class="current">Auto</a>
+  <a href="./in-page.html">In tests</a>
+  <a href="./components-test.html">Components</a>
+  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
+  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
+</nav>
 
 <!-- That's it. One script tag, zero JS by the user. -->
 <script src="../dist/snapdiff-auto.js" data-auto data-namespace="auto-demo"></script>

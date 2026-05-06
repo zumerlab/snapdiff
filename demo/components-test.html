@@ -2,61 +2,56 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Components test — snapDiff</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folder of components — snapDiff demo</title>
+
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+<link rel="stylesheet" href="./shared.css" />
+
 <style>
-  :root { color-scheme: light; }
-  body {
-    margin: 0; padding: 32px; background: #f4f5f7;
-    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
-    color: #1a1d24;
-  }
-  h1 { margin: 0 0 8px; font-size: 22px; }
-  p.lead { margin: 0 0 16px; opacity: .75; max-width: 720px; }
-  p.lead code { background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #e6e8ee; }
-
+  /* ── Toolbar ── */
   .toolbar {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    padding: 12px; background: white; border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    margin-bottom: 16px;
-  }
-  .toolbar button {
-    background: #2f6df6; color: white; border: 0;
-    padding: 8px 14px; border-radius: 6px;
-    font-weight: 600; cursor: pointer;
-  }
-  .toolbar button.secondary { background: #1a1d24; }
-  .toolbar button.danger { background: #d63d4d; }
-  .toolbar label {
-    display: flex; align-items: center; gap: 6px;
-    padding: 6px 10px; border: 1px solid #d8dce3;
-    border-radius: 6px; background: white; font-size: 12px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    padding: 14px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
   }
 
+  /* ── Status panel ── */
   #status {
-    padding: 14px 16px; background: white; border-radius: 8px;
-    border: 1px solid #e6e8ee; font-variant-numeric: tabular-nums;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
   }
   #status .progress {
-    height: 4px; background: #e6e8ee; border-radius: 999px;
-    margin-top: 10px; overflow: hidden;
+    height: 6px;
+    background: var(--accent-soft);
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    margin-top: 12px;
+    overflow: hidden;
   }
   #status .progress .bar {
-    height: 100%; background: #2f6df6; width: 0%;
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
     transition: width .15s ease;
   }
   #status .components-list {
-    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
   }
-  #status .pill {
-    font: 11px/1 ui-sans-serif, system-ui, sans-serif;
-    padding: 4px 8px; border-radius: 999px; background: #f3f4f6;
-    color: #4b5563;
-  }
-  #status .pill.pass { background: #dcfce7; color: #166534; }
-  #status .pill.fail { background: #fee2e2; color: #991b1b; }
-  #status .pill.new  { background: #fef9c3; color: #854d0e; }
-  #status .pill.error { background: #ffedd5; color: #9a3412; }
 
   iframe.test-frame {
     position: absolute; left: -99999px; top: 0;
@@ -66,23 +61,45 @@
 </head>
 <body>
 
-<h1>Components test — snapDiff</h1>
-<p class="lead">
-  Reads <code>./components/</code> from the static server, loads each HTML in a hidden iframe,
-  captures it via snapdom, diffs against IndexedDB. Open the corner reporter or click
-  <em>Run tests</em> below. No CLI, no Playwright — pure browser.
-</p>
+<section class="hero-block compact">
+  <img src="./assets/mrsnapdom-run.png" alt="Mr SnapDOM running" class="hero-mascot" width="120" height="100" />
+  <h1><span class="accent">03</span> <span class="accent-ink">Folder of components</span></h1>
+  <p class="tagline">
+    Reads <code>./components/</code>, loads each HTML in a hidden iframe, captures via
+    snapdom, diffs against IndexedDB. <em>Pure browser.</em>
+  </p>
+</section>
 
-<div class="toolbar">
-  <button id="run">Run tests</button>
-  <label>
-    <input type="checkbox" id="mutate" />
-    inject mutation (<code>filter: hue-rotate</code>) on next run
-  </label>
-  <button id="clear" class="danger">Clear baselines</button>
-</div>
+<div class="section-label">Controls</div>
 
-<div id="status">Loading manifest…</div>
+<main class="page-main">
+  <div class="toolbar">
+    <button id="run" class="btn btn-primary">
+      <i class="fas fa-play"></i> Run tests
+    </button>
+    <label class="field">
+      <input type="checkbox" id="mutate" />
+      inject mutation (<code style="background:transparent;color:var(--accent);padding:0">filter: hue-rotate</code>) on next run
+    </label>
+    <button id="clear" class="btn btn-danger">
+      <i class="fas fa-trash"></i> Clear baselines
+    </button>
+  </div>
+
+  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Status</div>
+
+  <div id="status">Loading manifest…</div>
+</main>
+
+<nav class="page-nav">
+  <a href="./">Demos</a>
+  <a href="./auto.html">Auto</a>
+  <a href="./in-page.html">In tests</a>
+  <a href="./components-test.html" class="current">Components</a>
+  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
+  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
+</nav>
 
 <script type="module">
 import { snapdom } from 'https://esm.sh/@zumer/snapdom'
@@ -92,9 +109,6 @@ import { captureFromIframe } from '../vitest/iframe-capture.js'
 const FOLDER = './components'
 const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom'
 
-// 1. Discover components: try server's directory listing first, fall back to
-//    a manifest.json. Either source works — directory listing is what `npx serve`
-//    and `python -m http.server` both produce by default.
 async function listComponents() {
   try {
     const res = await fetch(FOLDER + '/')
@@ -129,7 +143,7 @@ function renderStatus(msg, results) {
     list.className = 'components-list'
     for (const r of results) {
       const pill = document.createElement('span')
-      pill.className = `pill ${r.status}`
+      pill.className = `sticker ${r.status}`
       pill.textContent = `${r.name} · ${r.status}${r.ratio != null ? ` (${(r.ratio * 100).toFixed(1)}%)` : ''}`
       list.appendChild(pill)
     }
@@ -152,13 +166,12 @@ function renderProgress(done, total, label) {
 const components = await listComponents()
 renderStatus(`Found ${components.length} component(s) in ${FOLDER}/`)
 
-// Hidden iframe reused across all tests.
 const iframe = document.createElement('iframe')
 iframe.className = 'test-frame'
 document.body.appendChild(iframe)
 
 const runner = createRunner({
-  snapdom,                       // required by createRunner; not actually used here (tests return canvases)
+  snapdom,
   namespace: 'components-demo',
   threshold: 0.1,
   failureRatio: 0.005,
@@ -184,9 +197,6 @@ for (const url of components) {
       snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
       setup: mutateCheckbox.checked ? mutationSetup : undefined,
     })
-    // captureFromIframe returns a canvas owned by the iframe's window — copy
-    // it into a parent-owned canvas so runner.js's `instanceof HTMLCanvasElement`
-    // check passes (each frame has its own constructors).
     const c = document.createElement('canvas')
     c.width = iframeCanvas.width
     c.height = iframeCanvas.height
@@ -216,7 +226,6 @@ document.getElementById('clear').onclick = async () => {
   renderStatus('Baselines cleared. Click Run tests to record fresh ones.')
 }
 
-// Auto-run once on first load — gives the user immediate feedback without a click.
 runAll()
 </script>
 </body>

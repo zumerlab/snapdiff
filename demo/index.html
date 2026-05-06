@@ -1,104 +1,278 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>snapDiff demos</title>
-<style>
-  :root { color-scheme: light; }
-  body {
-    margin: 0; padding: 48px 32px; background: #f4f5f7;
-    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
-    color: #1a1d24;
-  }
-  .wrap { max-width: 880px; margin: 0 auto; }
-  h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -.01em; }
-  p.lead { margin: 0 0 32px; opacity: .7; max-width: 640px; font-size: 15px; line-height: 1.6; }
-  p.lead code { background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #e6e8ee; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>snapDiff demos — Visual regression in the browser</title>
+  <meta name="description" content="Three runnable browser examples for snapDiff: drop a tag, call it from tests, or diff a folder of components." />
+  <meta name="robots" content="index, follow" />
 
-  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
-  @media (min-width: 720px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  a.card {
-    display: flex; flex-direction: column; gap: 10px;
-    background: white; padding: 24px; border-radius: 12px;
-    text-decoration: none; color: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    border: 1px solid transparent;
-    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-  }
-  a.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.08);
-    border-color: #2f6df6;
-  }
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+  <link rel="stylesheet" href="./shared.css" />
 
-  .tier {
-    display: inline-block; align-self: flex-start;
-    font: 600 11px/1 ui-sans-serif, system-ui, sans-serif;
-    text-transform: uppercase; letter-spacing: .06em;
-    padding: 4px 8px; border-radius: 999px;
-    background: #eff6ff; color: #1e40af;
-  }
-  a.card h2 { margin: 0; font-size: 17px; line-height: 1.3; }
-  a.card p { margin: 0; opacity: .7; font-size: 13px; line-height: 1.55; flex: 1; }
-  a.card .arrow { font-size: 13px; color: #2f6df6; font-weight: 600; }
+  <style>
+    /* ── What-is plain explainer ── */
+    .explainer {
+      width: 100%;
+      max-width: 720px;
+      padding: 0 24px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .explainer p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+    .explainer p strong { color: var(--text); font-weight: 700; }
 
-  footer {
-    margin-top: 48px; padding-top: 24px; border-top: 1px solid #e6e8ee;
-    font-size: 13px; opacity: .6;
-  }
-  footer a { color: #2f6df6; text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
-</style>
+    /* ── Cards grid ── */
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 880px) {
+      .grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    }
+
+    a.card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--surface);
+      padding: 22px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.15s ease;
+      height: 100%;
+      position: relative;
+      min-width: 0; /* let grid track size win over <pre> max-content */
+    }
+    a.card:hover { transform: translate(-2px, -2px); }
+    .grid { align-items: stretch; }
+
+
+    a.card .tier {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border-soft);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    a.card .tier .num {
+      font-family: var(--font-display);
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    a.card h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin: 4px 0 0;
+      line-height: 1.2;
+      color: var(--text);
+      min-height: 2.4em; /* normalize 1- vs 2-line titles */
+    }
+    a.card .summary {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 4.8em; /* ≈3 lines, so all summaries align */
+    }
+    a.card .best-for {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: auto; /* push best-for + snippet + arrow to the bottom */
+      padding-top: 4px;
+    }
+    a.card .best-for strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    a.card .snippet {
+      background: var(--border);
+      color: #FFFCF4;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.65;
+      padding: 11px 13px;
+      border-radius: 6px;
+      margin: 4px 0 2px;
+      white-space: pre;
+      overflow-x: auto;
+      box-shadow: 2px 2px 0 var(--border);
+      min-height: 5.8em; /* fits the 4-line snippet, top-aligned */
+      box-sizing: border-box;
+    }
+    a.card .snippet::-webkit-scrollbar { display: none; }
+    a.card .snippet .k { color: #8FA9FF; }
+    a.card .snippet .s { color: #F5C26B; }
+    a.card .snippet .c { color: #7B89B0; }
+    a.card .snippet .t { color: #6BD7A8; }
+
+    a.card .arrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    a.card:hover .arrow { color: var(--accent-hover); }
+
+    .footnote {
+      width: 100%;
+      max-width: 720px;
+      padding: 0 24px;
+      margin-top: 28px;
+    }
+    .footnote-inner {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    .footnote-inner a { font-weight: 600; border-bottom: 1px solid var(--border-soft); }
+    .footnote-inner a:hover { color: var(--accent-hover); border-bottom-color: var(--accent); }
+  </style>
 </head>
 <body>
-<div class="wrap">
 
-  <h1>snapDiff demos</h1>
-  <p class="lead">
-    Three runnable examples — one per tier of the architecture. All three use the same diff engine, store, and reporter.
-    Each is self-contained: open and play.
-  </p>
-
-  <div class="grid">
-
-    <a class="card" href="./in-page.html">
-      <span class="tier">Tier 1 · in-page</span>
-      <h2>Mutation toggle</h2>
-      <p>
-        Explicit <code>runner.test()</code> calls, three fixtures (hero / pricing / avatar),
-        a button to introduce visual drift on demand. The original demo.
-      </p>
-      <span class="arrow">Open →</span>
+  <section class="hero-block">
+    <a href="https://github.com/zumerlab/snapdiff" class="github-badge" target="_blank" rel="noopener">
+      <i class="fab fa-github"></i>
+      <span>zumerlab/snapdiff</span>
+      <span class="github-stars"><i class="fas fa-star"></i><span id="star-count">…</span></span>
     </a>
+    <img src="./assets/mrsnapdom-pose.png" alt="Mr SnapDOM pointing up" class="hero-mascot" width="160" height="138" />
+    <h1><span class="accent">Snap</span><span class="accent-ink">Diff</span></h1>
+    <p class="tagline">
+      Visual regression in the browser. <em>One engine, three ways to wire it in.</em>
+    </p>
+  </section>
 
-    <a class="card" href="./auto.html">
-      <span class="tier">Tier 1 · zero JS</span>
-      <h2>Auto-discover</h2>
-      <p>
-        One <code>&lt;script data-auto&gt;</code> tag, three elements with <code>data-snap</code>.
-        No user JavaScript. Corner badge runs the show.
-      </p>
-      <span class="arrow">Open →</span>
-    </a>
-
-    <a class="card" href="./components-test.html">
-      <span class="tier">Tier 1 · folder runner</span>
-      <h2>Components (iframe)</h2>
-      <p>
-        Reads <code>./components/</code>, loads each HTML in a hidden iframe, captures via snapdom,
-        diffs against IndexedDB. Pure browser, no Playwright.
-      </p>
-      <span class="arrow">Open →</span>
-    </a>
-
+  <div class="explainer">
+    <p>
+      snapDiff takes a <strong>screenshot</strong> of your UI, saves it as a baseline,
+      and tells you the next time something looks different. Pick the setup closest to
+      what your project already looks like.
+    </p>
   </div>
 
-  <footer>
-    Tier 2 (<code>snapdiff-stale</code>) and Tier 3 (vitest + Playwright) live outside the browser —
-    see the <a href="../README.md">README</a> for those.
-  </footer>
+  <div class="section-label">Three setups</div>
 
-</div>
+  <main class="page-main">
+    <div class="grid">
+
+      <a class="card" href="./auto.html">
+        <span class="tier"><span class="num">01</span> Easiest</span>
+        <h2>Drop a tag on your page</h2>
+        <p class="summary">
+          Add <code>data-snap</code> to anything you want tracked. Drop one
+          <code>&lt;script&gt;</code> tag. The corner badge tells you if anything changed.
+        </p>
+        <p class="best-for">Best for · <strong>Static sites &amp; quick checks</strong></p>
+<pre class="snippet"><span class="k">&lt;div</span> <span class="t">data-snap</span>=<span class="s">"hero"</span><span class="k">&gt;</span>…<span class="k">&lt;/div&gt;</span>
+<span class="k">&lt;script</span> <span class="t">data-auto</span> <span class="t">src</span>=<span class="s">"…"</span><span class="k">&gt;&lt;/script&gt;</span></pre>
+        <span class="arrow">Open <i class="fas fa-arrow-right"></i></span>
+      </a>
+
+      <a class="card" href="./in-page.html">
+        <span class="tier"><span class="num">02</span> Hands-on</span>
+        <h2>Call it from your test code</h2>
+        <p class="summary">
+          Write <code>runner.test()</code> like any other test. Pair it with Vitest, Jest,
+          or vanilla JS. You decide when each check runs.
+        </p>
+        <p class="best-for">Best for · <strong>Apps with a test suite</strong></p>
+<pre class="snippet"><span class="c">// inside your test</span>
+runner.<span class="t">test</span>(<span class="s">'hero'</span>, () =&gt;
+  document.<span class="t">querySelector</span>(<span class="s">'.hero'</span>))</pre>
+        <span class="arrow">Open <i class="fas fa-arrow-right"></i></span>
+      </a>
+
+      <a class="card" href="./components-test.html">
+        <span class="tier"><span class="num">03</span> At scale</span>
+        <h2>Diff a folder of components</h2>
+        <p class="summary">
+          One HTML file per component in <code>/components/</code>. The runner walks the
+          folder, loads each in a hidden iframe, diffs everything.
+        </p>
+        <p class="best-for">Best for · <strong>Design systems &amp; libraries</strong></p>
+<pre class="snippet">components/
+  ├─ hero.html
+  ├─ pricing.html
+  └─ avatar.html  <span class="c">→ all diffed</span></pre>
+        <span class="arrow">Open <i class="fas fa-arrow-right"></i></span>
+      </a>
+
+    </div>
+
+    <div class="footnote">
+      <div class="footnote-inner">
+        These three are all browser-side. The package also ships
+        <code>snapdiff-stale</code> for baseline hygiene and a
+        <strong>Vitest browser suite</strong> for CI — see the
+        <a href="https://github.com/zumerlab/snapdiff#readme">README</a>.
+      </div>
+    </div>
+  </main>
+
+  <nav class="page-nav">
+    <a href="./" class="current">Demos</a>
+    <a href="./auto.html">Auto</a>
+    <a href="./in-page.html">In tests</a>
+    <a href="./components-test.html">Components</a>
+    <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
+    <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
+  </nav>
+
+  <script>
+    fetch('https://api.github.com/repos/zumerlab/snapdiff')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d) return;
+        const el = document.getElementById('star-count');
+        if (el) el.textContent = d.stargazers_count.toLocaleString();
+      })
+      .catch(() => {
+        const el = document.getElementById('star-count');
+        if (el) el.textContent = '★';
+      });
+  </script>
 </body>
 </html>

@@ -2,36 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Mutation toggle — snapDiff demo</title>
-<style>
-  :root { color-scheme: light; }
-  body {
-    margin: 0; padding: 32px; background: #f4f5f7;
-    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
-    color: #1a1d24;
-  }
-  h1 { margin: 0 0 8px; font-size: 22px; }
-  p.lead { margin: 0 0 24px; opacity: .75; max-width: 640px; }
-  .toolbar {
-    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
-    padding: 12px; background: white; border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  }
-  .toolbar button {
-    background: #2f6df6; color: white; border: 0; padding: 8px 14px;
-    border-radius: 6px; font-weight: 600; cursor: pointer;
-  }
-  .toolbar button.secondary { background: #1a1d24; }
-  .toolbar button.danger { background: #d63d4d; }
-  .toolbar label { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #d8dce3; border-radius: 6px; background: white; font-size: 12px; }
-  .grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-  .card {
-    background: white; padding: 20px; border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  }
-  .card h2 { margin: 0 0 8px; font-size: 14px; }
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>In your tests — snapDiff demo</title>
 
-  /* === Fixture: hero === */
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+<link rel="stylesheet" href="./shared.css" />
+
+<style>
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    padding: 14px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── Fixtures grid ── */
+  .grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .fixture {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .fixture > h2 {
+    margin: 0 0 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  /* ───────────────────────────────────────────────
+     Below: the *captured* fixtures.
+     Don't touch — these are the visual baselines.
+     ─────────────────────────────────────────────── */
   .hero {
     background: linear-gradient(135deg, #6f5cff, #2f6df6);
     color: white; padding: 28px; border-radius: 12px;
@@ -42,19 +59,18 @@
     border-radius: 999px; font-size: 11px; letter-spacing: .04em;
     text-transform: uppercase;
   }
-  .hero h3 { margin: 10px 0 4px; font-size: 20px; }
+  .hero h3 { margin: 10px 0 4px; font-size: 20px; font-family: 'DM Sans', sans-serif; }
   .hero p { margin: 0; opacity: .85; font-size: 13px; }
 
-  /* === Fixture: pricing === */
   .pricing { display: grid; gap: 8px; }
   .pricing .row {
     display: flex; justify-content: space-between; padding: 10px 12px;
     background: #f9fafb; border-radius: 6px; border: 1px solid #e6e8ee;
+    color: #1a1d24;
   }
   .pricing .row strong { font-variant-numeric: tabular-nums; }
   .pricing .row.highlight { background: #fff8e1; border-color: #f5d877; }
 
-  /* === Fixture: avatar === */
   .avatar-row { display: flex; gap: 12px; align-items: center; }
   .avatar {
     width: 56px; height: 56px; border-radius: 50%;
@@ -62,8 +78,8 @@
     display: grid; place-items: center; color: white; font-weight: 700; font-size: 22px;
     box-shadow: inset 0 0 0 3px white, 0 4px 12px rgba(0,0,0,.15);
   }
-  .avatar-meta strong { display: block; }
-  .avatar-meta span { opacity: .7; font-size: 12px; }
+  .avatar-meta strong { display: block; color: #1a1d24; }
+  .avatar-meta span { opacity: .7; font-size: 12px; color: #1a1d24; }
 
   /* Mutation styles, applied via toggle */
   body.mutated .hero { background: linear-gradient(135deg, #d63d4d, #ff8a3d); }
@@ -74,55 +90,86 @@
 </style>
 </head>
 <body>
-<h1>snapDiff in-page demo</h1>
-<p class="lead">
-  Visual regression tests that run entirely in the browser.
-  snapdom captures each fixture, snapDiff diffs against the IndexedDB baseline
-  and shows the result in an overlay. No Node, no Puppeteer.
-</p>
 
-<div class="toolbar">
-  <button id="run">Run tests</button>
-  <button id="mutate" class="secondary">Toggle mutation</button>
-  <button id="reset" class="danger">Clear baselines</button>
-  <label><input type="checkbox" id="includeAA" /> count anti-aliasing</label>
-  <label>threshold <input type="range" id="threshold" min="0" max="0.5" step="0.01" value="0.1" /> <span id="thresholdVal">0.10</span></label>
-</div>
+<section class="hero-block compact">
+  <img src="./assets/mrsnapdom-greet.png" alt="Mr SnapDOM saluting" class="hero-mascot" width="110" height="120" />
+  <h1><span class="accent">02</span> <span class="accent-ink">In your tests</span></h1>
+  <p class="tagline">
+    Explicit <code>runner.test()</code> calls. Hit <em>Run</em>, toggle a mutation, and
+    re-run to watch snapDiff catch the drift.
+  </p>
+</section>
 
-<div class="grid">
-  <div class="card" data-test="hero">
-    <h2>Hero</h2>
-    <div class="hero">
-      <span class="badge">New</span>
-      <h3>Ship faster</h3>
-      <p>Capture, diff and review — all client-side.</p>
-    </div>
+<div class="section-label">Controls</div>
+
+<main class="page-main">
+  <div class="toolbar">
+    <button id="run" class="btn btn-primary">
+      <i class="fas fa-play"></i> Run tests
+    </button>
+    <button id="mutate" class="btn btn-ink">
+      <i class="fas fa-shuffle"></i> Toggle mutation
+    </button>
+    <button id="reset" class="btn btn-danger">
+      <i class="fas fa-trash"></i> Clear baselines
+    </button>
+    <label class="field">
+      <input type="checkbox" id="includeAA" />
+      count anti-aliasing
+    </label>
+    <label class="field">
+      threshold
+      <input type="range" id="threshold" min="0" max="0.5" step="0.01" value="0.1" />
+      <span id="thresholdVal">0.10</span>
+    </label>
   </div>
-  <div class="card" data-test="pricing">
-    <h2>Pricing rows</h2>
-    <div class="pricing">
-      <div class="row"><span>Hobby</span><strong>$0</strong></div>
-      <div class="row highlight"><span>Pro</span><strong>$19</strong></div>
-      <div class="row"><span>Team</span><strong>$49</strong></div>
+
+  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Fixtures</div>
+
+  <div class="grid">
+    <div class="fixture" data-test="hero">
+      <h2>Hero</h2>
+      <div class="hero">
+        <span class="badge">New</span>
+        <h3>Ship faster</h3>
+        <p>Capture, diff and review — all client-side.</p>
+      </div>
     </div>
-  </div>
-  <div class="card" data-test="avatar">
-    <h2>Avatar</h2>
-    <div class="avatar-row">
-      <div class="avatar">JM</div>
-      <div class="avatar-meta">
-        <strong>Juan Martin</strong>
-        <span>zumerlab</span>
+    <div class="fixture" data-test="pricing">
+      <h2>Pricing rows</h2>
+      <div class="pricing">
+        <div class="row"><span>Hobby</span><strong>$0</strong></div>
+        <div class="row highlight"><span>Pro</span><strong>$19</strong></div>
+        <div class="row"><span>Team</span><strong>$49</strong></div>
+      </div>
+    </div>
+    <div class="fixture" data-test="avatar">
+      <h2>Avatar</h2>
+      <div class="avatar-row">
+        <div class="avatar">JM</div>
+        <div class="avatar-meta">
+          <strong>Juan Martin</strong>
+          <span>zumerlab</span>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
+
+<nav class="page-nav">
+  <a href="./">Demos</a>
+  <a href="./auto.html">Auto</a>
+  <a href="./in-page.html" class="current">In tests</a>
+  <a href="./components-test.html">Components</a>
+  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
+  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
+</nav>
 
 <script type="module">
   import { snapdom } from 'https://esm.sh/@zumer/snapdom@2.9.0'
   import { createRunner, Reporter } from '../src/index.js'
 
-  // Build runner once. Tests reference DOM elements by data-test attribute.
   const runner = createRunner({
     snapdom,
     namespace: 'demo',

@@ -6,34 +6,34 @@
 
 # SnapDIFF
 
-**Visual regression testing that runs entirely in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
+**Visual regression testing that runs in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
 
-snapDiff captures DOM elements with snapDOM, diffs them against baselines, shows you what changed. No headless browser, no Puppeteer, no Playwright (\*), no Jest, no `pixelmatch` — same algorithms, in the page.
+snapDiff captures DOM elements with snapDOM, compares them to saved baselines, and shows what changed. The basic workflow does not need Puppeteer, Playwright, Jest, or `pixelmatch`: capture, diff, storage, and review all happen in the page.
 
-> (\*) Tier 3 below *optionally* uses Playwright for CI gates.
+> The CI workflow below uses Vitest browser mode with Playwright as the provider.
 
 ---
 
-## Three ways to use it
+## Ways to use it
 
 ```
-Tier 1 — Pure browser (zero JS)
+1. Pure browser
   └── <script src="snapdiff-auto.js" data-auto>
-      • IndexedDB · zero install · zero Node
-      • Open the page, see diffs, click Approve
+      • baselines in IndexedDB
+      • useful when opening the page manually is enough
 
-Tier 2 — Cheap Node CLI (no headless browser)
+2. Staleness check
   └── snapdiff-stale --baseline DIR --source DIR
-      • Pure fs.stat · no rendering
-      • Hygiene & auditing · CI-friendly exit codes
+      • compares file mtimes
+      • no rendering, good for cheap CI warnings
 
-Tier 3 — Playwright + vitest (CI gates)
+3. Vitest browser suite
   └── defineDemoSuite()
-      • Disk baselines · PR-blocking failures
-      • Cross-browser real · CI-ready
+      • disk baselines
+      • fails tests when visuals drift
 ```
 
-Each tier is a **complete product for a real audience**, not a stepping stone toward the next. An OSS frontend dev can stay in Tier 1 forever and be fine. A small team adds Tier 2 for a CI warning that doesn't block. A regulated team picks Tier 3.
+You can stop at the first workflow if that is all your project needs. The goal is to make visual checks cheap enough that they actually get used, then leave a path to stricter CI when a project needs it.
 
 ---
 
@@ -49,11 +49,11 @@ npm install --save-dev @zumer/snapdiff
 npm install --save-dev @zumer/snapdiff @zumer/snapdom
 ```
 
-Tier 1 via script tag needs no install at all — point at unpkg directly (snapdom is loaded from the CDN at runtime).
+The script-tag workflow can also be used from a CDN without installing the package. snapDOM is loaded at runtime unless you pass your own URL.
 
 ---
 
-## Tier 1 — Pure browser (zero JS)
+## Pure browser
 
 Drop a script tag, mark elements with `data-snap`, refresh the page.
 
@@ -64,9 +64,9 @@ Drop a script tag, mark elements with `data-snap`, refresh the page.
 <div data-snap="pricing">...</div>
 ```
 
-First load records baselines silently in IndexedDB. Every reload after diffs and shows a badge in the bottom-right. Click it for the full reporter (split / slider / diff modes, approve, export/import, delete baselines).
+The first load records baselines in IndexedDB. Later loads compare against those baselines and show a small badge in the bottom-right corner. Open it to review split / slider / diff views, approve changes, export/import baselines, or delete old ones.
 
-snapdom is loaded dynamically from the esm.sh CDN. To self-host or pin a version, set `data-snapdom-url`.
+snapDOM is loaded dynamically from the esm.sh CDN by default. To self-host it or pin a version, set `data-snapdom-url`.
 
 ### Configuration via `data-*` attrs
 
@@ -121,17 +121,17 @@ Open `http://localhost:3000/demo/` — a hub with three live examples:
 
 ### Tradeoffs
 
-- **Baselines per-machine** (IndexedDB). Sharing across devs is one-click export/import to JSON via the reporter toolbar.
-- **No PR gate** — nothing fails a merge automatically; the dev has to open the page.
-- **Requires a habit** — if nobody runs it, regressions ship.
+- **Baselines are local** because IndexedDB belongs to one browser/profile. Use export/import when you want to share them.
+- **It does not block PRs**. Someone has to open the page and look at the reporter.
+- **It depends on routine**. If nobody runs it, it will not catch regressions.
 
-For most small projects these are acceptable. The real alternative for that audience is *nothing*, not Percy/Chromatic. Tier 1 is 80% of the value at 5% of the cost.
+For small projects, prototypes, docs, and component demos, that tradeoff is often acceptable. The comparison is not always Percy or Chromatic; a lot of the time the comparison is no visual regression testing at all.
 
 ---
 
-## Tier 2 — Cheap Node CLI (`snapdiff-stale`)
+## Staleness check (`snapdiff-stale`)
 
-A tiny `fs.stat` utility that flags baselines older than their source files. Pure Node — no browser, no Playwright. Catches the case where the threshold silently tolerated a real change because the dev forgot to re-record.
+`snapdiff-stale` is a small Node utility that flags baselines older than their source files. It does not render anything. It is meant to catch the simple case where a demo changed but its baseline was never re-recorded.
 
 ```sh
 npx snapdiff-stale
@@ -153,7 +153,7 @@ Defaults to `__snapshots__/visual/*.png` ↔ `demo/components/*.html`, matching 
 - **Unrecorded** — source has no baseline yet (never been tested)
 - **Orphan** — baseline has no source (renamed or deleted)
 
-Only **stale** counts toward `--strict` exit code — the other two need human decisions.
+Only **stale** entries count toward the `--strict` exit code. Unrecorded and orphaned files are reported, but they usually need a human decision.
 
 ### Flags
 
@@ -178,13 +178,13 @@ const { stale, orphans, unrecorded } = await checkStaleness({
 })
 ```
 
-Wire it as a `pretest` hook for a soft warning, or as a CI step with `--strict` for a hard gate.
+Use it as a `pretest` warning, or run it in CI with `--strict` if stale baselines should fail the job.
 
 ---
 
-## Tier 3 — Playwright + vitest (CI gates)
+## Vitest browser suite
 
-For projects that need a PR to fail when visuals regress. Same engine, same reporter as Tier 1, plus disk-backed baselines and full vitest integration.
+For projects that need visual regressions to fail tests, snapDiff includes a Vitest browser helper. It uses the same diff engine, stores baselines on disk, and writes a static `report.html` after each run.
 
 ```js
 // vitest.config.js
@@ -219,9 +219,11 @@ defineDemoSuite({
 })
 ```
 
-Each demo becomes a vitest test. Baselines land at `__snapshots__/visual/<name>.png` (commit them). On every run, a self-contained `report.html` is regenerated.
+Each demo becomes a Vitest test. Baselines land at `__snapshots__/visual/<name>.png`; commit them with your project. On every run, a self-contained `report.html` is regenerated.
 
-Update baselines: `UPDATE_VISUAL=1 npx vitest run`.
+On the first run, missing baselines are recorded and reported as `new`. Commit those files before relying on the suite as a PR gate.
+
+Update baselines with `UPDATE_VISUAL=1 npx vitest run`.
 
 ### `defineDemoSuite(options)`
 
@@ -242,7 +244,7 @@ Per-demo override fields: `target`, `wait`, `snapdomOptions`, `setup(win, doc)`,
 
 ## Determinism (applies to every tier)
 
-Visual baselines must be reproducible across machines, browsers, headed/headless, retina/non-retina, and CI. snapDiff defaults are chosen for portability:
+Visual baselines are only useful if they are reproducible. snapDiff defaults to portable captures:
 
 | option | default | why |
 |---|---|---|
@@ -251,23 +253,23 @@ Visual baselines must be reproducible across machines, browsers, headed/headless
 | `embedFonts` | `true` | otherwise font availability across machines changes layout |
 | viewport | `1280×1024` | element bounds depend on it |
 
-Change any of these between recording and verifying and every test fails with `dims differ`. snapDiff catches this and tells you exactly what to do.
+If you change these between recording and verifying, tests can fail with `dims differ`. snapDiff reports that case explicitly because DPR/scale mismatches are a common source of noisy visual tests.
 
 ## Threshold cheat sheet
 
 The `threshold` is the per-pixel YIQ perceptual delta. Below it, the pixel is considered visually unchanged.
 
 - `0.05` — strict. Catches subtle gradient and shadow shifts.
-- `0.1` — default. Tolerates antialiasing flicker, catches real changes.
+- `0.1` — default. Tolerates small antialiasing drift while still catching visible changes.
 - `0.2` — lenient. Useful when text rendering varies across machines.
 
 The `failureRatio` is how much overall mismatch is allowed before a test fails. Default `0` (any mismatch fails). Increase to `0.001` (0.1%) if you have noisy fixtures.
 
 ## Scope
 
-snapDiff captures what snapDOM captures. The capture surface keeps growing — see [snapDOM](https://github.com/zumerlab/snapdom) for the up-to-date list of supported features and known gaps.
+snapDiff captures what snapDOM captures. See [snapDOM](https://github.com/zumerlab/snapdom) for the current capture behavior and known gaps.
 
-The line worth knowing: snapDOM renders the **DOM** to an image, not the **browser window**. For most apps — sites, dashboards, design systems, component libraries — the two are visually equivalent and snapDiff is a good fit. For testing that hinges on output outside the DOM's reach (native widgets, OS-level chrome), a browser-level screenshot tool like Playwright (or a hosted service like Percy / Chromatic) is the right call. snapDiff doesn't try to replace those.
+The important distinction: snapDOM renders the **DOM** to an image, not the full **browser window**. For sites, dashboards, design systems, and component libraries, that is often the surface you care about. For native widgets, browser chrome, OS-level rendering, or anything outside the DOM capture surface, use a browser screenshot tool such as Playwright or a hosted review service.
 
 ## Architecture
 
@@ -292,7 +294,7 @@ The line worth knowing: snapDOM renders the **DOM** to an image, not the **brows
     └─────────────────┘
 ```
 
-Diff engine, store, and reporter are independent. `import { diffPixels } from '@zumer/snapdiff/diff'` works in Node + `node-canvas` if you just need pixel-diff without snapDOM.
+Diff engine, store, and reporter are separate modules. `import { diffPixels } from '@zumer/snapdiff/diff'` works in Node + `node-canvas` if you only need pixel diffing.
 
 ## Subpath imports
 
@@ -314,9 +316,9 @@ CLI: `snapdiff-stale` (installed as a `bin`, runnable via `npx`).
 
 snapDiff is a project of [Zumerlab](https://github.com/zumerlab) — same authors as snapDOM.
 
-It started as in-house tooling. snapDOM ships a gallery of 50+ visual demos that exercise the full capture surface — CSS, fonts, gradients, filters, transforms, web components — and unit tests can't catch the regressions that matter there: "does this still *look* right" isn't a function-return question. The existing VR stacks (Puppeteer + pixelmatch + Jest + a separate review tool) were heavy enough that nobody on the team set them up. snapDiff is what we built instead, and it's been guarding snapDOM on every commit since.
+It started as internal tooling for snapDOM. That project has a gallery of visual demos covering CSS, fonts, gradients, filters, transforms, and web components. Unit tests are useful there, but they do not answer the question "does this still look right?"
 
-If it can verify snapDOM's renderings, it can verify yours.
+snapDiff was built to keep that visual surface under test without adding a large screenshot stack. It is small on purpose: capture with snapDOM, diff pixels, store baselines, review changes.
 
 ## License
 
