@@ -7,7 +7,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.js', 'vitest/**/*.js', '__tests__/**/*.js'],
+    files: ['src/**/*.js', 'vitest/**/*.js', '__tests__/**/*.js', 'bin/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

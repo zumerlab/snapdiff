@@ -12,17 +12,23 @@
       "require": "./dist/snapdiff.js",
       "default": "./dist/snapdiff.mjs"
     },
+    "./auto": "./src/auto.js",
     "./diff": "./src/diff.js",
     "./store": "./src/store.js",
     "./runner": "./src/runner.js",
     "./reporter": "./src/reporter.js",
     "./file-store": "./src/file-store.js",
+    "./stale": "./src/stale-check.js",
     "./static-report": "./src/static-report.js",
     "./vitest": "./vitest/index.js",
     "./vitest/suite": "./vitest/suite.js",
     "./vitest/iframe-capture": "./vitest/iframe-capture.js"
   },
+  "bin": {
+    "snapdiff-stale": "./bin/snapdiff-stale.js"
+  },
   "files": [
+    "bin/",
     "dist/",
     "src/",
     "vitest/",
@@ -30,8 +36,8 @@
   ],
   "scripts": {
     "compile": "node esbuild.config.mjs",
-    "lint": "eslint src vitest __tests__ --ext .js",
-    "lint:fix": "eslint src vitest __tests__ --ext .js --fix",
+    "lint": "eslint src vitest __tests__ bin --ext .js",
+    "lint:fix": "eslint src vitest __tests__ bin --ext .js --fix",
     "test": "npm run lint:fix && npx vitest run --browser.headless --reporter=verbose",
     "test:coverage": "npx vitest run --browser.headless --coverage",
     "demo": "npx serve .",

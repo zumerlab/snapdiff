@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Callout</title>
+<style>
+  body { margin: 0; padding: 40px; background: #f4f5f7; font: 14px ui-sans-serif, system-ui, sans-serif; }
+  #target {
+    width: 360px; padding: 18px 20px;
+    background: white; border-left: 4px solid #6f5cff;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+  }
+  #target blockquote {
+    margin: 0 0 10px;
+    font: 500 15px/1.6 ui-sans-serif, system-ui, sans-serif;
+    color: #1a1d24;
+  }
+  #target footer {
+    display: flex; align-items: center; gap: 8px;
+    color: #6b7280; font-size: 12px;
+  }
+  #target footer .dot { width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #6f5cff, #2f6df6); }
+</style>
+</head>
+<body>
+<div id="target">
+  <blockquote>"snapDiff replaced our entire visual regression toolchain. We just drop a script and ship."</blockquote>
+  <footer>
+    <div class="dot"></div>
+    <span>A. Engineer · Acme Inc.</span>
+  </footer>
+</div>
+</body>
+</html>

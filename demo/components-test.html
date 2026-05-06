@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Components test — snapDiff</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 32px; background: #f4f5f7;
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: #1a1d24;
+  }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  p.lead { margin: 0 0 16px; opacity: .75; max-width: 720px; }
+  p.lead code { background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #e6e8ee; }
+
+  .toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px; background: white; border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    margin-bottom: 16px;
+  }
+  .toolbar button {
+    background: #2f6df6; color: white; border: 0;
+    padding: 8px 14px; border-radius: 6px;
+    font-weight: 600; cursor: pointer;
+  }
+  .toolbar button.secondary { background: #1a1d24; }
+  .toolbar button.danger { background: #d63d4d; }
+  .toolbar label {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border: 1px solid #d8dce3;
+    border-radius: 6px; background: white; font-size: 12px;
+  }
+
+  #status {
+    padding: 14px 16px; background: white; border-radius: 8px;
+    border: 1px solid #e6e8ee; font-variant-numeric: tabular-nums;
+  }
+  #status .progress {
+    height: 4px; background: #e6e8ee; border-radius: 999px;
+    margin-top: 10px; overflow: hidden;
+  }
+  #status .progress .bar {
+    height: 100%; background: #2f6df6; width: 0%;
+    transition: width .15s ease;
+  }
+  #status .components-list {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px;
+  }
+  #status .pill {
+    font: 11px/1 ui-sans-serif, system-ui, sans-serif;
+    padding: 4px 8px; border-radius: 999px; background: #f3f4f6;
+    color: #4b5563;
+  }
+  #status .pill.pass { background: #dcfce7; color: #166534; }
+  #status .pill.fail { background: #fee2e2; color: #991b1b; }
+  #status .pill.new  { background: #fef9c3; color: #854d0e; }
+  #status .pill.error { background: #ffedd5; color: #9a3412; }
+
+  iframe.test-frame {
+    position: absolute; left: -99999px; top: 0;
+    border: 0; width: 1280px; height: 1024px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Components test — snapDiff</h1>
+<p class="lead">
+  Reads <code>./components/</code> from the static server, loads each HTML in a hidden iframe,
+  captures it via snapdom, diffs against IndexedDB. Open the corner reporter or click
+  <em>Run tests</em> below. No CLI, no Playwright — pure browser.
+</p>
+
+<div class="toolbar">
+  <button id="run">Run tests</button>
+  <label>
+    <input type="checkbox" id="mutate" />
+    inject mutation (<code>filter: hue-rotate</code>) on next run
+  </label>
+  <button id="clear" class="danger">Clear baselines</button>
+</div>
+
+<div id="status">Loading manifest…</div>
+
+<script type="module">
+import { snapdom } from 'https://esm.sh/@zumer/snapdom'
+import { createRunner, Reporter } from '../src/index.js'
+import { captureFromIframe } from '../vitest/iframe-capture.js'
+
+const FOLDER = './components'
+const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom'
+
+// 1. Discover components: try server's directory listing first, fall back to
+//    a manifest.json. Either source works — directory listing is what `npx serve`
+//    and `python -m http.server` both produce by default.
+async function listComponents() {
+  try {
+    const res = await fetch(FOLDER + '/')
+    if (res.ok && /text\/html/i.test(res.headers.get('content-type') || '')) {
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+      const hrefs = [...doc.querySelectorAll('a[href]')]
+        .map(a => a.getAttribute('href'))
+        .filter(h => /\.html?$/i.test(h) && !/^index\.html?$/i.test(h.split('/').pop()))
+      if (hrefs.length) return hrefs.sort()
+    }
+  } catch { /* fall through */ }
+
+  const res = await fetch(`${FOLDER}/manifest.json`)
+  if (!res.ok) throw new Error('No directory listing or manifest.json')
+  const data = await res.json()
+  return data.components
+}
+
+function baseName(url) {
+  const m = String(url).match(/([^/\\]+?)(?:\.html?)?$/i)
+  return m ? m[1] : String(url)
+}
+
+const status = document.getElementById('status')
+function renderStatus(msg, results) {
+  status.innerHTML = ''
+  const top = document.createElement('div')
+  top.textContent = msg
+  status.appendChild(top)
+  if (Array.isArray(results) && results.length) {
+    const list = document.createElement('div')
+    list.className = 'components-list'
+    for (const r of results) {
+      const pill = document.createElement('span')
+      pill.className = `pill ${r.status}`
+      pill.textContent = `${r.name} · ${r.status}${r.ratio != null ? ` (${(r.ratio * 100).toFixed(1)}%)` : ''}`
+      list.appendChild(pill)
+    }
+    status.appendChild(list)
+  }
+}
+function renderProgress(done, total, label) {
+  status.innerHTML = ''
+  const top = document.createElement('div')
+  top.textContent = `${label} (${done}/${total})`
+  const bar = document.createElement('div')
+  bar.className = 'progress'
+  const fill = document.createElement('div')
+  fill.className = 'bar'
+  fill.style.width = `${total ? (done / total) * 100 : 0}%`
+  bar.appendChild(fill)
+  status.append(top, bar)
+}
+
+const components = await listComponents()
+renderStatus(`Found ${components.length} component(s) in ${FOLDER}/`)
+
+// Hidden iframe reused across all tests.
+const iframe = document.createElement('iframe')
+iframe.className = 'test-frame'
+document.body.appendChild(iframe)
+
+const runner = createRunner({
+  snapdom,                       // required by createRunner; not actually used here (tests return canvases)
+  namespace: 'components-demo',
+  threshold: 0.1,
+  failureRatio: 0.005,
+})
+
+const mutateCheckbox = document.getElementById('mutate')
+function mutationSetup(_win, doc) {
+  const style = doc.createElement('style')
+  style.textContent = '#target { filter: hue-rotate(90deg); }'
+  doc.head.appendChild(style)
+}
+
+for (const url of components) {
+  const name = baseName(url)
+  const fullUrl = url.startsWith('/') || /^https?:/.test(url)
+    ? url
+    : `${FOLDER}/${url.replace(/^\.\//, '')}`
+  runner.test(name, async () => {
+    const iframeCanvas = await captureFromIframe(iframe, fullUrl, {
+      target: ['#target', 'body'],
+      wait: 80,
+      snapdomUrl: SNAPDOM_URL,
+      snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
+      setup: mutateCheckbox.checked ? mutationSetup : undefined,
+    })
+    // captureFromIframe returns a canvas owned by the iframe's window — copy
+    // it into a parent-owned canvas so runner.js's `instanceof HTMLCanvasElement`
+    // check passes (each frame has its own constructors).
+    const c = document.createElement('canvas')
+    c.width = iframeCanvas.width
+    c.height = iframeCanvas.height
+    c.getContext('2d').drawImage(iframeCanvas, 0, 0)
+    return c
+  })
+}
+
+const reporter = new Reporter(runner, { onClose: () => reporter.unmount() })
+
+async function runAll() {
+  renderProgress(0, components.length, 'Running tests')
+  const results = await runner.run({
+    onProgress: ({ index, total, result }) => {
+      renderProgress(index + 1, total, `Tested ${result.name}`)
+    },
+  })
+  reporter.mount()
+  reporter.setResults(results)
+  renderStatus(`Done — ${runner.summary(results).pass}/${results.length} passing.`, results)
+}
+
+document.getElementById('run').onclick = runAll
+document.getElementById('clear').onclick = async () => {
+  if (!confirm('Delete all baselines for namespace "components-demo"?')) return
+  await runner.store.clear()
+  renderStatus('Baselines cleared. Click Run tests to record fresh ones.')
+}
+
+// Auto-run once on first load — gives the user immediate feedback without a click.
+runAll()
+</script>
+</body>
+</html>

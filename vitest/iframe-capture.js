@@ -15,8 +15,11 @@ export async function captureFromIframe(iframe, url, opts = {}) {
   await navigateIframe(iframe, 'about:blank')
   await navigateIframe(iframe, url)
   // Sanity check — fail loudly if the iframe somehow still points elsewhere.
+  // Normalize both sides because static servers with "clean URLs" (npx serve,
+  // Vercel-style hosts) drop trailing .html/.htm in the address bar even
+  // though we requested it explicitly.
   const loadedURL = iframe.contentDocument?.URL || ''
-  if (!loadedURL.endsWith(url) && !loadedURL.includes(url)) {
+  if (!sameUrl(loadedURL, url)) {
     throw new Error(`Iframe loaded "${loadedURL}" but expected "${url}". Aborting capture.`)
   }
   // Let the browser paint at least once before measuring.
@@ -46,6 +49,17 @@ export async function captureFromIframe(iframe, url, opts = {}) {
 function baseName(url) {
   const m = String(url).match(/([^/\\]+?)(?:\.html?)?$/i)
   return m ? m[1] : String(url)
+}
+
+// Compare URLs ignoring trailing .html/.htm, trailing slash, and query/hash
+// — robust against "clean URL" rewrites by static servers.
+function sameUrl(a, b) {
+  const norm = (u) => String(u)
+    .replace(/[?#].*$/, '')
+    .replace(/\.html?$/i, '')
+    .replace(/\/$/, '')
+  const na = norm(a), nb = norm(b)
+  return na.endsWith(nb) || nb.endsWith(na) || na.includes(nb) || nb.includes(na)
 }
 
 function navigateIframe(iframe, url) {

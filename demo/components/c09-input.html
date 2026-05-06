@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Input</title>
+<style>
+  body { margin: 0; padding: 40px; background: #f4f5f7; font: 14px ui-sans-serif, system-ui, sans-serif; }
+  #target { width: 320px; }
+  #target label {
+    display: block; font: 600 12px ui-sans-serif, system-ui, sans-serif;
+    color: #1a1d24; margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  #target .field {
+    display: flex; align-items: center;
+    border: 1px solid #d8dce3; background: white;
+    border-radius: 8px; padding: 0 12px; height: 40px;
+  }
+  #target .field:focus-within { border-color: #2f6df6; box-shadow: 0 0 0 3px rgba(47,109,246,.15); }
+  #target .field span {
+    color: #9ca3af; font-size: 14px; margin-right: 8px;
+  }
+  #target .field input {
+    border: 0; outline: 0; flex: 1;
+    font: 14px ui-sans-serif, system-ui, sans-serif;
+    color: #1a1d24; background: transparent;
+  }
+  #target small { display: block; margin-top: 6px; color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="target">
+  <label>Email address</label>
+  <div class="field">
+    <span>@</span>
+    <input type="text" value="juan@zumerlab.com" />
+  </div>
+  <small>We'll never share this with anyone.</small>
+</div>
+</body>
+</html>

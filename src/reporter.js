@@ -217,6 +217,27 @@ export class Reporter {
     }
     bar.appendChild(exp)
 
+    const imp = el('button'); imp.textContent = 'Import'
+    imp.onclick = () => {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'application/json,.json'
+      input.onchange = async () => {
+        const file = input.files?.[0]
+        if (!file) return
+        try {
+          const bundle = JSON.parse(await file.text())
+          const { added, skipped } = await this.runner.store.import(bundle, { overwrite: true })
+          console.log(`[snapDiff] imported ${added} baseline(s), skipped ${skipped}`)
+          await this.runAndShow()
+        } catch (err) {
+          alert(`Import failed: ${err.message}`)
+        }
+      }
+      input.click()
+    }
+    bar.appendChild(imp)
+
     if (this.onClose) {
       const close = el('button'); close.textContent = '✕'
       close.onclick = () => { this.unmount(); this.onClose() }

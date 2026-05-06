@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avatar stack</title>
+<style>
+  body { margin: 0; padding: 40px; background: #f4f5f7; font: 14px ui-sans-serif, system-ui, sans-serif; }
+  #target { display: flex; }
+  #target .avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: white; font: 700 15px ui-sans-serif, system-ui, sans-serif;
+    border: 3px solid white; margin-left: -10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  }
+  #target .avatar:first-child { margin-left: 0; }
+  #target .a1 { background: conic-gradient(from 220deg, #ff8a3d, #d63d4d, #6f5cff); }
+  #target .a2 { background: conic-gradient(from 90deg,  #2f6df6, #6f5cff, #2f6df6); }
+  #target .a3 { background: conic-gradient(from 30deg,  #16a34a, #65a30d, #16a34a); }
+  #target .more {
+    background: #1a1d24; font-size: 13px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div id="target">
+  <div class="avatar a1">JM</div>
+  <div class="avatar a2">AL</div>
+  <div class="avatar a3">RS</div>
+  <div class="avatar more">+4</div>
+</div>
+</body>
+</html>

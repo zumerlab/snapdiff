@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alert</title>
+<style>
+  body { margin: 0; padding: 40px; background: #f4f5f7; font: 14px ui-sans-serif, system-ui, sans-serif; }
+  #target {
+    display: flex; gap: 12px; width: 360px;
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    color: #1e3a8a; padding: 14px 16px; border-radius: 8px;
+  }
+  #target .icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #2563eb; color: white;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 13px; flex: none;
+  }
+  #target .body strong { display: block; margin-bottom: 2px; }
+  #target .body span { font-size: 13px; opacity: .85; }
+</style>
+</head>
+<body>
+<div id="target">
+  <div class="icon">i</div>
+  <div class="body">
+    <strong>Heads up</strong>
+    <span>Two-factor auth will be required starting next month.</span>
+  </div>
+</div>
+</body>
+</html>

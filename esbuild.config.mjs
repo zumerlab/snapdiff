@@ -61,12 +61,31 @@ async function buildSubpaths() {
   })
 }
 
+/**
+ * Auto-bootstrap IIFE bundle for "drop the script" workflows.
+ * Loads snapdom dynamically at runtime — keeps this bundle small and lets the
+ * user pin or self-host snapdom via the data-snapdom-url attribute.
+ */
+async function buildAuto() {
+  await build({
+    ...common,
+    entryPoints: ['src/auto.js'],
+    outfile: 'dist/snapdiff-auto.js',
+    format: 'iife',
+    globalName: 'snapDiffAuto',
+    minify: true,
+    target: ['es2020'],
+    platform: 'browser',
+  })
+}
+
 async function main() {
   try { rmSync('dist', { recursive: true, force: true }) } catch { /* ok */ }
   await Promise.all([
     buildLegacy(),
     buildESM(),
     buildSubpaths(),
+    buildAuto(),
   ])
 }
 

@@ -1,0 +1,14 @@
+{
+  "components": [
+    "c01-button.html",
+    "c02-card.html",
+    "c03-badge.html",
+    "c04-alert.html",
+    "c05-progress.html",
+    "c06-avatar.html",
+    "c07-tabs.html",
+    "c08-toggle.html",
+    "c09-input.html",
+    "c10-callout.html"
+  ]
+}

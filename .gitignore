@@ -7,3 +7,4 @@ __snapshots__/visual/_artifacts/
 __snapshots__/visual/report.html
 .vitest-cache/
 .claude
+CLAUDE.md
