@@ -1,14 +1,18 @@
 <p align="center">
-  <a href="https://github.com/zumerlab/snapdiff">
+  <a href="https://zumerlab.com/snapdiff/">
     <img src="https://raw.githubusercontent.com/zumerlab/snapdiff/main/docs/assets/snapdiff.jpg" width="80%">
   </a>
+</p>
+
+<p align="center">
+  <a href="https://zumerlab.com/snapdiff/"><strong>▶ Live demo · zumerlab.com/snapdiff</strong></a>
 </p>
 
 # SnapDIFF
 
 **Visual regression testing that runs in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
 
-snapDiff captures DOM elements with snapDOM, compares them to saved baselines, and shows what changed. The basic workflow does not need Puppeteer, Playwright, Jest, or `pixelmatch`: capture, diff, storage, and review all happen in the page.
+SnapDIFF captures DOM elements with snapDOM, compares them to saved baselines, and shows what changed. The basic workflow does not need Puppeteer, Playwright, Jest, or `pixelmatch`: capture, diff, storage, and review all happen in the page.
 
 > The CI workflow below uses Vitest browser mode with Playwright as the provider.
 
@@ -107,17 +111,19 @@ Runner methods: `test(name, fn, opts?)`, `run({ filter?, onProgress? })`, `appro
 
 ### Demos
 
+Live at **[zumerlab.com/snapdiff](https://zumerlab.com/snapdiff/)** — or run them locally:
+
 ```sh
 git clone https://github.com/zumerlab/snapdiff && cd snapdiff
 npm install
 npm run demo
 ```
 
-Open `http://localhost:3000/docs/` — a hub with three live examples:
+Then open `http://localhost:3000/docs/` — a hub with three live examples:
 
-- **Mutation toggle** — explicit `runner.test()` calls, button to introduce visual drift
-- **Auto-discover** — zero-JS, just `<script data-auto>` + `data-snap` attrs
-- **Components folder** — reads `./components/` and runs each HTML in a hidden iframe
+- **Drop a tag** — zero-JS, just `<script data-auto>` + `data-snap` attrs
+- **In your tests** — explicit `runner.test()` calls, button to introduce visual drift
+- **Folder of components** — reads `./components/` and runs each HTML in a hidden iframe
 
 ### Tradeoffs
 
