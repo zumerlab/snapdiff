@@ -8,6 +8,10 @@
   <a href="https://zumerlab.com/snapdiff/"><strong>▶ Live demo · zumerlab.com/snapdiff</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://snapdom.dev"><img src="https://img.shields.io/badge/built%20with-snapDOM-blue" alt="Built with snapDOM"></a>
+</p>
+
 # SnapDIFF
 
 **Visual regression testing that runs in the browser.** Powered by [snapDOM](https://github.com/zumerlab/snapdom).
