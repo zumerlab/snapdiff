@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [v0.2.1](https://github.com/zumerlab/snapdiff/compare/v0.2.0...v0.2.1)
+
+> 18 July 2026
+
+- update [`f96d5b0`](https://github.com/zumerlab/snapdiff/commit/f96d5b084fe5a2732d9ea4c47cd11a67ad80c90c)
+- update [`009a03d`](https://github.com/zumerlab/snapdiff/commit/009a03dd9abadb177b8400ac242f4fc50b33373a)
+- update [`21485fe`](https://github.com/zumerlab/snapdiff/commit/21485fe4e4034ac2cc9ac3ec604a1beff02818c4)
+- update [`8727724`](https://github.com/zumerlab/snapdiff/commit/8727724fd1a9ba109d70785ca7222b8bd35d3d68)
+- update [`02ee702`](https://github.com/zumerlab/snapdiff/commit/02ee7024527f44a68f770e2f81e454386ad0352d)
+- update [`8ea5784`](https://github.com/zumerlab/snapdiff/commit/8ea5784975d54e82d8d0c1c75c34d08457f5f10b)
+- Keep capture iframe in-viewport: WebKit suspends timers in offscreen iframes [`356b7d1`](https://github.com/zumerlab/snapdiff/commit/356b7d11924be8cd24bb10b03e907ed478a17566)
+- update [`32f88ba`](https://github.com/zumerlab/snapdiff/commit/32f88baba497c503a9fd745635e100744cd275e9)
+- update [`d6c5412`](https://github.com/zumerlab/snapdiff/commit/d6c5412087d5d4aab3fbbc68718378ddd0952f46)
+- update [`74886e8`](https://github.com/zumerlab/snapdiff/commit/74886e8bec3d9111bc09a4f21a38e8f856bac728)
+- Agregar demo de in-page para pruebas de regresión visual [`cf8f318`](https://github.com/zumerlab/snapdiff/commit/cf8f3187a25ef7ea1e2ca2c3824aa3cf5aaedf03)
+
 #### [v0.2.0](https://github.com/zumerlab/snapdiff/compare/v0.1.0...v0.2.0)
 
 > 5 May 2026
