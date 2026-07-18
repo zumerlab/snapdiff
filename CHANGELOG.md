@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [v0.2.2](https://github.com/zumerlab/snapdiff/compare/v0.2.1...v0.2.2)
+
+> 18 July 2026
+
+- Report: reference baselines and artifacts relative to the report itself [`cfbbf6a`](https://github.com/zumerlab/snapdiff/commit/cfbbf6a8089ee84e1b27f249d61d230bf85a6f07)
+- Update docs lib bundles for 0.2.1 [`5372412`](https://github.com/zumerlab/snapdiff/commit/5372412a7b9d0c3bd702d6650216f7404f049ad9)
+
 #### [v0.2.1](https://github.com/zumerlab/snapdiff/compare/v0.2.0...v0.2.1)
 
 > 18 July 2026
