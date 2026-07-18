@@ -1,6 +1,6 @@
 /*
 * snapDiff
-* v0.2.1
+* v0.2.2
 * Author: Juan Martin Muda
 * License: MIT
 */
