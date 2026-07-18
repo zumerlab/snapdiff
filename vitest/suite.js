@@ -26,6 +26,11 @@ import { captureFromIframe } from './iframe-capture.js'
  * @param {string} [options.title='snapDiff']
  * @param {{width:number,height:number}} [options.viewport]
  */
+// The report is written inside the (possibly runtime-routed) baseDir, next to
+// _artifacts/ and the baselines — reference both relative to the report itself
+// instead of the static baseDir option, which commands may override per project.
+const reportRel = (p) => String(p).replace(/\\/g, '/').split('/').slice(-2).join('/')
+
 export function defineDemoSuite(options) {
   const {
     demos,
@@ -111,7 +116,7 @@ export function defineDemoSuite(options) {
         await store.put(name, actualBlob)
         results.push({
           name, status: 'new',
-          paths: { baseline: relpath(baseDir, name + '.png'), actual: actualPath },
+          paths: { baseline: name + '.png', actual: reportRel(actualPath) },
         })
         return
       }
@@ -125,7 +130,7 @@ export function defineDemoSuite(options) {
           name, status: 'pass',
           ratio: diffResult.ratio, diff: diffResult.diff,
           dimsMatch: diffResult.dimsMatch,
-          paths: { baseline: relpath(baseDir, name + '.png'), actual: actualPath },
+          paths: { baseline: name + '.png', actual: reportRel(actualPath) },
         })
         return
       }
@@ -138,7 +143,7 @@ export function defineDemoSuite(options) {
           name, status: 'new',
           ratio: diffResult.ratio, diff: diffResult.diff,
           dimsMatch: diffResult.dimsMatch,
-          paths: { baseline: relpath(baseDir, name + '.png'), actual: actualPath, diff: diffPath },
+          paths: { baseline: name + '.png', actual: reportRel(actualPath), diff: reportRel(diffPath) },
         })
         return
       }
@@ -147,7 +152,7 @@ export function defineDemoSuite(options) {
         name, status: 'fail',
         ratio: diffResult.ratio, diff: diffResult.diff,
         dimsMatch: diffResult.dimsMatch,
-        paths: { baseline: relpath(baseDir, name + '.png'), actual: actualPath, diff: diffPath },
+        paths: { baseline: name + '.png', actual: reportRel(actualPath), diff: reportRel(diffPath) },
       })
 
       if (!diffResult.dimsMatch) {
@@ -171,9 +176,6 @@ function baseName(url) {
   return m ? m[1] : String(url)
 }
 
-function relpath(baseDir, rel) {
-  return `${baseDir.replace(/\/$/, '')}/${rel}`
-}
 
 function readUpdateFlag() {
   try {
