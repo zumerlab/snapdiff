@@ -62,7 +62,9 @@ export function defineDemoSuite(options) {
   beforeAll(async () => {
     await commands.svClearArtifacts()
     iframe = document.createElement('iframe')
-    iframe.style.cssText = `position:fixed;left:-99999px;top:0;border:0;width:${viewport.width}px;height:${viewport.height}px`
+    // In-viewport but invisible: WebKit suspends timers and rAF inside iframes
+    // positioned outside the viewport, which hangs any capture that awaits them.
+    iframe.style.cssText = `position:fixed;left:0;top:0;opacity:0.01;pointer-events:none;border:0;width:${viewport.width}px;height:${viewport.height}px`
     document.body.appendChild(iframe)
   })
 
