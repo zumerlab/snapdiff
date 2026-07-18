@@ -1,6 +1,6 @@
 {
   "name": "@zumer/snapdiff",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Client-side visual regression testing powered by snapDOM. No headless browser, no extra binaries — capture, diff and review in the page itself.",
   "type": "module",
   "main": "./dist/snapdiff.js",
