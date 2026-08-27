@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateStaticReport } from '../src/static-report.js'
+import { generateStaticReport, mergeResults } from '../src/static-report.js'
 
 describe('generateStaticReport', () => {
   it('produces a complete HTML document', () => {
@@ -68,5 +68,28 @@ describe('generateStaticReport', () => {
     const html = generateStaticReport({ results })
     expect(html).toContain('class="error"')
     expect(html).toContain('snapdom inject timeout')
+  })
+})
+
+describe('mergeResults', () => {
+  it('accumulates the slices reported by separate files, ordered by name', () => {
+    const merged = mergeResults(
+      [{ name: 'd3', status: 'pass' }, { name: 'd1', status: 'pass' }],
+      [{ name: 'd2', status: 'fail' }],
+    )
+    expect(merged.map(r => r.name)).toEqual(['d1', 'd2', 'd3'])
+  })
+
+  it('lets a later result replace an earlier one for the same name', () => {
+    const merged = mergeResults(
+      [{ name: 'hero', status: 'fail' }],
+      [{ name: 'hero', status: 'pass' }],
+    )
+    expect(merged).toEqual([{ name: 'hero', status: 'pass' }])
+  })
+
+  it('starts from nothing and ignores entries without a name', () => {
+    expect(mergeResults()).toEqual([])
+    expect(mergeResults(undefined, [{ status: 'pass' }, null])).toEqual([])
   })
 })

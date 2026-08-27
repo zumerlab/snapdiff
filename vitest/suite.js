@@ -7,7 +7,6 @@ import { commands } from '@vitest/browser/context'
 import { diffCanvas } from '../src/diff.js'
 import { FileBaselineStore, } from '../src/file-store.js'
 import { canvasToBlob, blobToCanvas } from '../src/store.js'
-import { generateStaticReport } from '../src/static-report.js'
 import { captureFromIframe } from './iframe-capture.js'
 
 /**
@@ -65,7 +64,10 @@ export function defineDemoSuite(options) {
   let iframe
 
   beforeAll(async () => {
-    await commands.svClearArtifacts()
+    // `once`: this suite may be split across several test files so vitest can run
+    // the demos in parallel, and a per-file clear would delete the artifacts the
+    // other files already wrote.
+    await commands.svClearArtifacts({ once: true })
     iframe = document.createElement('iframe')
     // In-viewport but invisible: WebKit suspends timers and rAF inside iframes
     // positioned outside the viewport, which hangs any capture that awaits them.
@@ -75,8 +77,9 @@ export function defineDemoSuite(options) {
 
   afterAll(async () => {
     iframe?.remove()
-    const html = generateStaticReport({ title, results, baseDir })
-    const reportPath = await commands.svWriteReport(html)
+    // Send the results rather than a rendered report: when the suite is split
+    // across files, node is the only side that sees all of them.
+    const reportPath = await commands.svWriteReport({ title, baseDir, results })
 
     console.log(`\n[snapDiff] report → ${reportPath}\n`)
   })
@@ -175,7 +178,6 @@ function baseName(url) {
   const m = String(url).match(/([^/\\]+?)(?:\.html?)?$/i)
   return m ? m[1] : String(url)
 }
-
 
 function readUpdateFlag() {
   try {

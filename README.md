@@ -235,6 +235,39 @@ On the first run, missing baselines are recorded and reported as `new`. Commit t
 
 Update baselines with `UPDATE_VISUAL=1 npx vitest run`.
 
+### Splitting the suite across files
+
+Vitest parallelises by **file**, not by test, so a suite of many demos in one
+file runs them in series in a single worker — and that one file becomes the wall
+clock of the whole run. Call `defineDemoSuite` from several test files, each
+passing its own slice of the demos:
+
+```js
+// __tests__/visual.demos.shared.js — not a *.test.js, so vitest does not collect it
+const ALL = import.meta.glob('/demos/*.html')
+
+export function defineDemoShard (index, count) {
+  defineDemoSuite({
+    demos: Object.fromEntries(Object.entries(ALL).filter((_, i) => i % count === index)),
+    // ...the rest of your options
+  })
+}
+```
+
+```js
+// __tests__/visual.demos.1.test.js  (…2, …3, one file per shard)
+import { defineDemoShard } from './visual.demos.shared.js'
+
+defineDemoShard(0, 6)
+```
+
+Baselines are keyed by demo name, so which shard captures a demo does not matter
+and adding a demo never invalidates one. Artifacts and the report stay run-scoped
+on the node side: the artifacts directory is cleared once per run rather than per
+file, and `report.html` accumulates every shard's results, so it still covers the
+whole suite whichever file finishes last.
+
+
 ### `defineDemoSuite(options)`
 
 | option | default | meaning |

@@ -131,6 +131,22 @@ export function generateStaticReport({ title = 'snapDiff report', results = [], 
 </body></html>`
 }
 
+/**
+ * Merge result lists by name, last write wins, ordered by name.
+ *
+ * A demo suite can be split across several test files so vitest runs its demos
+ * in parallel, and each file then reports only the demos it ran. The report has
+ * to cover the whole run, so results accumulate instead of replacing each other.
+ * Sorting by name restores the order a single file would have produced.
+ */
+export function mergeResults(previous = [], incoming = []) {
+  const byName = new Map()
+  for (const result of [...previous, ...incoming]) {
+    if (result && typeof result.name === 'string') byName.set(result.name, result)
+  }
+  return [...byName.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+}
+
 function summarize(results) {
   return {
     pass: results.filter(r => r.status === 'pass').length,
