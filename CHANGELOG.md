@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+#### [v0.3.0](https://github.com/zumerlab/snapdiff/compare/v0.2.2...v0.3.0)
+
+> 27 August 2026
+
+- Suite: make artifact clearing and the report run-scoped, not per file [`7187b9b`](https://github.com/zumerlab/snapdiff/commit/7187b9b8e4a106133f354ca83619231879aa967d)
+
+
 #### [v0.2.2](https://github.com/zumerlab/snapdiff/compare/v0.2.1...v0.2.2)
 
 > 18 July 2026
