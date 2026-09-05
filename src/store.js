@@ -29,33 +29,47 @@ function awaitReq(req) {
   })
 }
 
+// WebKit can reject Blob/File persistence with "Error preparing Blob/File data".
+// Store PNG bytes and restore the public Blob on reads. Existing Blob records
+// remain readable without a destructive database migration.
+function publicRecord(record) {
+  if (!record) return null
+  if (record.blob instanceof ArrayBuffer) {
+    const { blobType, ...rest } = record
+    return { ...rest, blob: new Blob([record.blob], { type: blobType || 'image/png' }) }
+  }
+  return record
+}
+
 export class BaselineStore {
   constructor(namespace = 'default') { this.namespace = namespace }
 
   async _key(name) { return `${this.namespace}::${name}` }
 
   async put(name, blob, meta = {}) {
+    const bytes = await blob.arrayBuffer()
     const db = await openDB()
     const record = {
       name: await this._key(name),
       displayName: name,
       namespace: this.namespace,
-      blob,
+      blob: bytes,
+      blobType: blob.type,
       width: meta.width,
       height: meta.height,
       createdAt: Date.now(),
       metadata: meta.metadata ?? {},
     }
-    await awaitReq(tx(db, 'readwrite').put(record))
-    db.close()
-    return record
+    try { await awaitReq(tx(db, 'readwrite').put(record)) }
+    finally { db.close() }
+    return publicRecord(record)
   }
 
   async get(name) {
     const db = await openDB()
     const rec = await awaitReq(tx(db, 'readonly').get(await this._key(name)))
     db.close()
-    return rec ?? null
+    return publicRecord(rec)
   }
 
   async delete(name) {
@@ -68,7 +82,7 @@ export class BaselineStore {
     const db = await openDB()
     const all = await awaitReq(tx(db, 'readonly').getAll())
     db.close()
-    return all.filter(r => r.namespace === this.namespace)
+    return all.filter(r => r.namespace === this.namespace).map(publicRecord)
   }
 
   async clear() {

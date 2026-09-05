@@ -85,6 +85,18 @@ To check an unpublished v3 build from this repository, compile the sibling snapD
 SNAPDOM_TEST_PATH=../snapdom-v3/dist/snapdom.mjs npm run test:snapdom
 ```
 
+Run the same integration cases against both the installed v2 peer and the explicit
+v3 build on Chromium, Firefox, and WebKit:
+
+```sh
+SNAPDOM_TEST_PATH=../snapdom-v3/dist/snapdom.mjs npm run test:snapdom:matrix
+```
+
+The matrix runs engines sequentially and fails if it loads the wrong major.
+`SNAPDOM_V2_TEST_PATH` can select another compiled v2 build; `BROWSER=chromium`
+limits a local check to one engine. Install the three Playwright browsers before
+running the full matrix. No CDN or lockfile replacement is involved.
+
 ---
 
 ## Pure browser

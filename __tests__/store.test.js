@@ -36,6 +36,9 @@ describe('BaselineStore', () => {
     expect(rec.width).toBe(10)
     expect(rec.height).toBe(10)
     expect(rec.blob).toBeInstanceOf(Blob)
+    expect(rec.blob.type).toBe(blob.type)
+    expect(new Uint8Array(await rec.blob.arrayBuffer())).toEqual(new Uint8Array(await blob.arrayBuffer()))
+    expect(rec).not.toHaveProperty('blobType')
   })
 
   it('lists every baseline in the namespace', async () => {

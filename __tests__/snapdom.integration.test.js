@@ -1,4 +1,4 @@
-/* global __SNAPDOM_TEST_URL__ */
+/* global __SNAPDOM_TEST_URL__, __SNAPDOM_EXPECTED_MAJOR__ */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { snapdom } from '#snapdom-under-test'
 import { bootstrap } from '../src/auto.js'
@@ -40,7 +40,8 @@ function pixel(canvas) {
 
 function iframe() {
   const frame = document.createElement('iframe')
-  frame.style.cssText = 'width:1280px;height:1024px;border:0;position:absolute;left:-10000px'
+  // Match defineDemoSuite: WebKit suspends rAF in offscreen iframes.
+  frame.style.cssText = 'width:1280px;height:1024px;border:0;position:fixed;left:0;top:0;opacity:0.01;pointer-events:none'
   return append(frame)
 }
 
@@ -68,6 +69,11 @@ afterEach(async () => {
 })
 
 describe(`real snapDOM ${snapdom.version ?? '2.x'} integration`, () => {
+  it('runs the requested SnapDOM major rather than silently testing the installed peer', () => {
+    if (__SNAPDOM_EXPECTED_MAJOR__) {
+      expect(Number.parseInt(snapdom.version ?? '2', 10)).toBe(Number(__SNAPDOM_EXPECTED_MAJOR__))
+    }
+  })
   it('records, compares and detects inline style changes with portable partial options', async () => {
     vi.stubGlobal('devicePixelRatio', 2)
     const el = target()

@@ -9,6 +9,8 @@ const snapdomModule = process.env.SNAPDOM_TEST_PATH
   ? resolve(root, process.env.SNAPDOM_TEST_PATH)
   : fileURLToPath(import.meta.resolve('@zumer/snapdom'))
 const snapdomUrl = `/@fs/${snapdomModule.replace(/\\/g, '/').replace(/^\//, '')}`
+const browser = process.env.BROWSER || 'chromium'
+if (!['chromium', 'firefox', 'webkit'].includes(browser)) throw new Error(`Unknown BROWSER: ${browser}`)
 
 export default defineConfig({
   resolve: {
@@ -16,6 +18,7 @@ export default defineConfig({
   },
   define: {
     __SNAPDOM_TEST_URL__: JSON.stringify(snapdomUrl),
+    __SNAPDOM_EXPECTED_MAJOR__: JSON.stringify(process.env.SNAPDOM_EXPECTED_MAJOR || ''),
   },
   server: {
     fs: { allow: [root, dirname(snapdomModule)] },
@@ -26,7 +29,7 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: 'playwright',
-      instances: [{ browser: 'chromium' }],
+      instances: [{ browser }],
       screenshotFailures: false,
     },
     coverage: {

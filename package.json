@@ -41,6 +41,7 @@
     "lint:fix": "eslint src vitest __tests__ bin --ext .js --fix",
     "test": "npm run lint:fix && npx vitest run --browser.headless --reporter=verbose",
     "test:snapdom": "vitest run __tests__/snapdom.integration.test.js --browser.headless --reporter=verbose",
+    "test:snapdom:matrix": "node scripts/test-snapdom-matrix.mjs",
     "test:coverage": "npx vitest run --browser.headless --coverage",
     "demo": "npx serve .",
     "bump:dry": "npx @zumerbox/bump -d",
