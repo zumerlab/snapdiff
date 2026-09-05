@@ -3,33 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>In your tests — snapDiff demo</title>
+<title>Test runner — snapDiff</title>
 
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
-<link rel="stylesheet" href="./shared.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+<link rel="stylesheet" href="./shared.css?v=2" />
 
 <style>
-  /* ── Toolbar ── */
-  .toolbar {
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    padding: 14px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-
   /* ── Fixtures grid ── */
   .grid {
     display: grid; gap: 20px;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
   .fixture {
+    --surface: #FFFCF4;
+    --border: #0F1E4D;
+    --radius: 10px;
+    --font-mono: 'JetBrains Mono', monospace;
+    --text-muted: #5A6478;
+    color: #0F1E4D;
+    font-family: 'DM Sans', sans-serif;
+    line-height: normal;
     background: var(--surface);
     border: 2px solid var(--border);
     border-radius: var(--radius);
@@ -91,40 +86,50 @@
 </head>
 <body>
 
-<section class="hero-block compact">
-  <img src="./assets/mrsnapdom-greet.png" alt="Mr SnapDOM saluting" class="hero-mascot" width="110" height="120" />
-  <h1><span class="accent">02</span> <span class="accent-ink">In your tests</span></h1>
-  <p class="tagline">
-    Explicit <code>runner.test()</code> calls. Hit <em>Run</em>, toggle a mutation, and
-    re-run to watch snapDiff catch the drift.
-  </p>
-</section>
+<header class="site-header">
+  <a class="brand" href="./">snapDiff</a>
+  <nav class="site-links" aria-label="Project">
+    <a href="https://github.com/zumerlab/snapdiff">GitHub</a>
+    <a href="https://www.npmjs.com/package/@zumer/snapdiff">npm</a>
+  </nav>
+</header>
 
-<div class="section-label">Controls</div>
+<nav class="page-nav" aria-label="Examples">
+  <a href="./">Overview</a>
+  <a href="./auto.html">Script tag</a>
+  <a href="./in-page.html" class="current" aria-current="page">Test runner</a>
+  <a href="./components-test.html">Components</a>
+</nav>
+
+<section class="hero-block compact">
+  <h1>Test runner</h1>
+  <p class="tagline">Run three <code>runner.test()</code> calls, then save the baselines in the report. Toggle a mutation and run again to compare.</p>
+</section>
 
 <main class="page-main">
   <div class="toolbar">
-    <button id="run" class="btn btn-primary">
-      <i class="fas fa-play"></i> Run tests
+    <button id="run" class="btn btn-primary" disabled>
+      Run tests
     </button>
-    <button id="mutate" class="btn btn-ink">
-      <i class="fas fa-shuffle"></i> Toggle mutation
+    <button id="mutate" class="btn" aria-pressed="false" disabled>
+      Toggle mutation
     </button>
-    <button id="reset" class="btn btn-danger">
-      <i class="fas fa-trash"></i> Clear baselines
+    <button id="reset" class="btn" disabled>
+      Clear baselines
     </button>
     <label class="field">
       <input type="checkbox" id="includeAA" />
-      count anti-aliasing
+      Count anti-aliasing
     </label>
     <label class="field">
-      threshold
+      Threshold
       <input type="range" id="threshold" min="0" max="0.5" step="0.01" value="0.1" />
       <span id="thresholdVal">0.10</span>
     </label>
   </div>
+  <p id="status" class="demo-status" role="status">Loading capture library…</p>
 
-  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Fixtures</div>
+  <h2 class="section-label">Fixtures</h2>
 
   <div class="grid">
     <div class="fixture" data-test="hero">
@@ -156,53 +161,86 @@
   </div>
 </main>
 
-<nav class="page-nav">
-  <a href="./">Demos</a>
-  <a href="./auto.html">Auto</a>
-  <a href="./in-page.html" class="current">In tests</a>
-  <a href="./components-test.html">Components</a>
-  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
-  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
-  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
-</nav>
+<footer class="page-footer"><span>Part of <a href="https://zumerlab.com/">Zumerlab</a>.</span></footer>
 
 <script type="module">
-  import { snapdom } from 'https://esm.sh/@zumer/snapdom@2.9.0'
-  import { createRunner, Reporter } from './lib/snapdiff.mjs'
+  const status = document.getElementById('status')
+  const run = document.getElementById('run')
+  const mutate = document.getElementById('mutate')
+  const reset = document.getElementById('reset')
+  const includeAA = document.getElementById('includeAA')
+  const threshold = document.getElementById('threshold')
+  const thresholdVal = document.getElementById('thresholdVal')
+  threshold.oninput = () => thresholdVal.textContent = Number(threshold.value).toFixed(2)
 
-  const runner = createRunner({
-    snapdom,
-    namespace: 'demo',
-    threshold: 0.1,
-    failureRatio: 0,
-    snapdomOptions: { embedFonts: true },
-  })
-
-  runner.test('hero', () => document.querySelector('[data-test="hero"]'))
-  runner.test('pricing', () => document.querySelector('[data-test="pricing"]'))
-  runner.test('avatar', () => document.querySelector('[data-test="avatar"]'))
-
-  const reporter = new Reporter(runner, { onClose: () => {} })
-
-  document.getElementById('run').onclick = async () => {
-    runner.threshold = parseFloat(document.getElementById('threshold').value)
-    reporter.mount()
-    await reporter.runAndShow()
+  function setBusy(busy) {
+    for (const control of [run, mutate, reset, includeAA, threshold]) control.disabled = busy
   }
 
-  document.getElementById('mutate').onclick = () => {
-    document.body.classList.toggle('mutated')
-  }
+  try {
+    const [{ snapdom }, { createRunner, Reporter }] = await Promise.all([
+      import('https://esm.sh/@zumer/snapdom@2.9.0'),
+      import('./lib/snapdiff.mjs'),
+    ])
 
-  document.getElementById('reset').onclick = async () => {
-    if (!confirm('Delete all baselines for namespace "demo"?')) return
-    await runner.store.clear()
-    alert('Baselines cleared. Run again to record fresh ones.')
-  }
+    const runner = createRunner({
+      snapdom,
+      namespace: 'demo',
+      threshold: 0.1,
+      failureRatio: 0,
+      snapdomOptions: { embedFonts: true },
+    })
 
-  const thr = document.getElementById('threshold')
-  const thrVal = document.getElementById('thresholdVal')
-  thr.oninput = () => thrVal.textContent = parseFloat(thr.value).toFixed(2)
+    const diffOptions = { threshold: 0.1, includeAA: false }
+    runner.test('hero', () => document.querySelector('[data-test="hero"]'), diffOptions)
+    runner.test('pricing', () => document.querySelector('[data-test="pricing"]'), diffOptions)
+    runner.test('avatar', () => document.querySelector('[data-test="avatar"]'), diffOptions)
+
+    const reporter = new Reporter(runner, { onClose: () => {} })
+
+    run.onclick = async () => {
+      setBusy(true)
+      run.textContent = 'Running…'
+      status.textContent = 'Capturing fixtures…'
+      diffOptions.threshold = Number(threshold.value)
+      diffOptions.includeAA = includeAA.checked
+      try {
+        reporter.mount()
+        const results = await reporter.runAndShow()
+        const summary = runner.summary(results)
+        status.textContent = `${summary.pass} passed, ${summary.fail} failed, ${summary.new} new, ${summary.error} errors. Review the results to save or update baselines.`
+      } catch (error) {
+        reporter.unmount()
+        status.textContent = `Could not run tests: ${error.message}`
+      } finally {
+        setBusy(false)
+        run.textContent = 'Run tests'
+      }
+    }
+
+    mutate.onclick = () => {
+      const mutated = document.body.classList.toggle('mutated')
+      mutate.setAttribute('aria-pressed', String(mutated))
+      status.textContent = `Mutation ${mutated ? 'on' : 'off'}. Run tests to compare.`
+    }
+
+    reset.onclick = async () => {
+      if (!confirm('Delete all baselines for namespace "demo"?')) return
+      setBusy(true)
+      try {
+        await runner.store.clear()
+        status.textContent = 'Baselines cleared. Run tests, then save the new baselines in the report.'
+      } catch (error) {
+        status.textContent = `Could not clear baselines: ${error.message}`
+      } finally {
+        setBusy(false)
+      }
+    }
+    setBusy(false)
+    status.textContent = 'Ready. Run tests to capture the three fixtures.'
+  } catch (error) {
+    status.textContent = `Could not load the demo: ${error.message}. Reload to try again.`
+  }
 </script>
 </body>
 </html>

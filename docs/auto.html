@@ -3,33 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Drop a tag — snapDiff demo</title>
+<title>Script tag — snapDiff</title>
 
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
-<link rel="stylesheet" href="./shared.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
+<link rel="stylesheet" href="./shared.css?v=2" />
 
 <style>
-  /* ── Toolbar ── */
-  .toolbar {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    padding: 14px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-
   /* ── Fixtures grid ── */
   .grid {
     display: grid; gap: 20px;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
   .fixture {
+    --surface: #FFFCF4;
+    --border: #0F1E4D;
+    --radius: 10px;
+    --font-mono: 'JetBrains Mono', monospace;
+    --text-muted: #5A6478;
+    color: #0F1E4D;
+    font-family: 'DM Sans', sans-serif;
+    line-height: normal;
     background: var(--surface);
     border: 2px solid var(--border);
     border-radius: var(--radius);
@@ -78,28 +73,38 @@
 </head>
 <body>
 
-<section class="hero-block compact">
-  <img src="./assets/mrsnapdom-pose.png" alt="Mr SnapDOM pointing up" class="hero-mascot" width="110" height="120" />
-  <h1><span class="accent">01</span> <span class="accent-ink">Drop a tag</span></h1>
-  <p class="tagline">
-    <em>Zero JS</em> from you. One <code>&lt;script data-auto&gt;</code> tag finds every
-    <code>data-snap</code> element, captures, diffs, and parks a badge in the corner.
-  </p>
-</section>
+<header class="site-header">
+  <a class="brand" href="./">snapDiff</a>
+  <nav class="site-links" aria-label="Project">
+    <a href="https://github.com/zumerlab/snapdiff">GitHub</a>
+    <a href="https://www.npmjs.com/package/@zumer/snapdiff">npm</a>
+  </nav>
+</header>
 
-<div class="section-label">Controls</div>
+<nav class="page-nav" aria-label="Examples">
+  <a href="./">Overview</a>
+  <a href="./auto.html" class="current" aria-current="page">Script tag</a>
+  <a href="./in-page.html">Test runner</a>
+  <a href="./components-test.html">Components</a>
+</nav>
+
+<section class="hero-block compact">
+  <h1>Script tag</h1>
+  <p class="tagline">A <code>&lt;script data-auto&gt;</code> tag captures each <code>data-snap</code> element. The first run saves a baseline; later runs compare against it.</p>
+</section>
 
 <main class="page-main">
   <div class="toolbar">
-    <button class="btn btn-ink" onclick="document.body.classList.toggle('mutated'); location.reload();">
-      <i class="fas fa-shuffle"></i> Toggle mutation + reload
+    <button id="mutate" class="btn" aria-pressed="false" disabled>
+      Toggle mutation + reload
     </button>
-    <button class="btn btn-danger" onclick="indexedDB.deleteDatabase('snapDiff'); location.reload();">
-      <i class="fas fa-trash"></i> Clear baselines + reload
+    <button id="reset" class="btn" disabled>
+      Clear baselines + reload
     </button>
   </div>
+  <p id="status" class="demo-status" role="status">Loading capture library…</p>
 
-  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Fixtures</div>
+  <h2 class="section-label">Fixtures</h2>
 
   <div class="grid">
     <div class="fixture" data-snap="hero">
@@ -130,18 +135,74 @@
   </div>
 </main>
 
-<nav class="page-nav">
-  <a href="./">Demos</a>
-  <a href="./auto.html" class="current">Auto</a>
-  <a href="./in-page.html">In tests</a>
-  <a href="./components-test.html">Components</a>
-  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
-  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
-  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
-</nav>
+<footer class="page-footer"><span>Part of <a href="https://zumerlab.com/">Zumerlab</a>.</span></footer>
 
-<!-- That's it. One script tag, zero JS by the user. -->
-<script src="./lib/snapdiff-auto.js" data-auto data-namespace="auto-demo"></script>
+<script>
+  // Demo controls only. The data-auto script below handles capture and comparison.
+  const mutationURL = new URL(location.href)
+  const mutated = mutationURL.searchParams.has('mutated')
+  document.body.classList.toggle('mutated', mutated)
+  const mutate = document.getElementById('mutate')
+  const reset = document.getElementById('reset')
+  const status = document.getElementById('status')
+  mutate.setAttribute('aria-pressed', String(mutated))
+
+  mutate.onclick = () => {
+    if (mutated) mutationURL.searchParams.delete('mutated')
+    else mutationURL.searchParams.set('mutated', '1')
+    location.assign(mutationURL)
+  }
+
+  reset.onclick = async () => {
+    if (!confirm('Delete all baselines for namespace "auto-demo"?')) return
+    mutate.disabled = reset.disabled = true
+    status.textContent = 'Clearing baselines…'
+    try {
+      const { BaselineStore } = await import('./lib/snapdiff.mjs')
+      await new BaselineStore('auto-demo').clear()
+      location.reload()
+    } catch (error) {
+      status.textContent = `Could not clear baselines: ${error.message}`
+      mutate.disabled = reset.disabled = false
+    }
+  }
+
+  const loadingTimeout = setTimeout(() => {
+    if (!document.querySelector('.sd-fab')) {
+      status.textContent = 'Capture has not started. Check your connection and reload to try again.'
+      mutate.disabled = reset.disabled = false
+    }
+  }, 15000)
+  const captureStatus = new MutationObserver(() => {
+    const result = document.querySelector('.sd-fab')
+    if (!result) return
+    const running = result.classList.contains('sd-running')
+    mutate.disabled = reset.disabled = running
+    const message = running
+      ? 'Capturing fixtures…'
+      : result.textContent.includes('error')
+        ? 'Capture failed. Reload to try again.'
+        : `${mutated ? 'Mutation on. ' : ''}Open the snapDiff result in the corner to review.`
+    if (status.textContent !== message) status.textContent = message
+    if (!running) {
+      clearTimeout(loadingTimeout)
+      captureStatus.disconnect()
+    }
+  })
+  captureStatus.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] })
+</script>
+<script type="module">
+  // The fixtures use webfonts. Load them before the automatic first capture.
+  await document.fonts.ready
+  const script = document.createElement('script')
+  script.src = './lib/snapdiff-auto.js'
+  script.dataset.auto = ''
+  script.dataset.namespace = 'auto-demo'
+  script.onerror = () => {
+    document.getElementById('status').textContent = 'The capture library could not load. Reload to try again.'
+  }
+  document.body.appendChild(script)
+</script>
 
 </body>
 </html>

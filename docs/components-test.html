@@ -3,43 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Folder of components — snapDiff demo</title>
+<title>Component folder — snapDiff</title>
 
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mansalva&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" />
-<link rel="stylesheet" href="./shared.css" />
+<link rel="stylesheet" href="./shared.css?v=2" />
 
 <style>
-  /* ── Toolbar ── */
-  .toolbar {
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    padding: 14px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 18px;
-    box-shadow: var(--shadow);
-  }
-
   /* ── Status panel ── */
   #status {
-    padding: 18px 20px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
     font-family: var(--font-mono);
     font-size: 13px;
     font-variant-numeric: tabular-nums;
     color: var(--text);
   }
   #status .progress {
-    height: 6px;
+    height: 4px;
     background: var(--accent-soft);
-    border: 1.5px solid var(--border);
-    border-radius: 999px;
     margin-top: 12px;
     overflow: hidden;
   }
@@ -61,51 +41,48 @@
 </head>
 <body>
 
-<section class="hero-block compact">
-  <img src="./assets/mrsnapdom-run.png" alt="Mr SnapDOM running" class="hero-mascot" width="120" height="100" />
-  <h1><span class="accent">03</span> <span class="accent-ink">Folder of components</span></h1>
-  <p class="tagline">
-    Reads <code>./components/</code>, loads each HTML in a hidden iframe, captures via
-    snapdom, diffs against IndexedDB. <em>Pure browser.</em>
-  </p>
-</section>
+<header class="site-header">
+  <a class="brand" href="./">snapDiff</a>
+  <nav class="site-links" aria-label="Project">
+    <a href="https://github.com/zumerlab/snapdiff">GitHub</a>
+    <a href="https://www.npmjs.com/package/@zumer/snapdiff">npm</a>
+  </nav>
+</header>
 
-<div class="section-label">Controls</div>
+<nav class="page-nav" aria-label="Examples">
+  <a href="./">Overview</a>
+  <a href="./auto.html">Script tag</a>
+  <a href="./in-page.html">Test runner</a>
+  <a href="./components-test.html" class="current" aria-current="page">Components</a>
+</nav>
+
+<section class="hero-block compact">
+  <h1>Component folder</h1>
+  <p class="tagline">Load each HTML file in <code>./components/</code>, capture it in an iframe, and compare it with a baseline saved in this browser.</p>
+</section>
 
 <main class="page-main">
   <div class="toolbar">
-    <button id="run" class="btn btn-primary">
-      <i class="fas fa-play"></i> Run tests
+    <button id="run" class="btn btn-primary" disabled>
+      Run tests
     </button>
     <label class="field">
       <input type="checkbox" id="mutate" />
-      inject mutation (<code style="background:transparent;color:var(--accent);padding:0">filter: hue-rotate</code>) on next run
+      Change colors on next run
     </label>
-    <button id="clear" class="btn btn-danger">
-      <i class="fas fa-trash"></i> Clear baselines
+    <button id="clear" class="btn" disabled>
+      Clear baselines
     </button>
   </div>
 
-  <div class="section-label" style="padding: 0; margin: 22px 0 14px;">Status</div>
+  <h2 class="section-label">Status</h2>
 
-  <div id="status">Loading manifest…</div>
+  <div id="status" role="status">Loading components…</div>
 </main>
 
-<nav class="page-nav">
-  <a href="./">Demos</a>
-  <a href="./auto.html">Auto</a>
-  <a href="./in-page.html">In tests</a>
-  <a href="./components-test.html" class="current">Components</a>
-  <a href="https://github.com/zumerlab/snapdiff" target="_blank" rel="noopener">GitHub</a>
-  <a href="https://www.npmjs.com/package/@zumer/snapdiff" target="_blank" rel="noopener">npm</a>
-  <a href="https://snapdom.dev/" target="_blank" rel="noopener">snapDOM ↗</a>
-</nav>
+<footer class="page-footer"><span>Part of <a href="https://zumerlab.com/">Zumerlab</a>.</span></footer>
 
 <script type="module">
-import { snapdom } from 'https://esm.sh/@zumer/snapdom@2'
-import { createRunner, Reporter } from './lib/snapdiff.mjs'
-import { captureFromIframe } from './lib/iframe-capture.js'
-
 const FOLDER = './components'
 const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom@2'
 
@@ -124,6 +101,9 @@ async function listComponents() {
   const res = await fetch(`${FOLDER}/manifest.json`)
   if (!res.ok) throw new Error('No directory listing or manifest.json')
   const data = await res.json()
+  if (!Array.isArray(data.components) || !data.components.length) {
+    throw new Error('The manifest contains no components')
+  }
   return data.components
 }
 
@@ -163,67 +143,103 @@ function renderProgress(done, total, label) {
   status.append(top, bar)
 }
 
-const components = await listComponents()
-renderStatus(`Found ${components.length} component(s) in ${FOLDER}/ — click "Run tests" to start.`)
-
-const iframe = document.createElement('iframe')
-iframe.className = 'test-frame'
-document.body.appendChild(iframe)
-
-const runner = createRunner({
-  snapdom,
-  namespace: 'components-demo',
-  threshold: 0.1,
-  failureRatio: 0.005,
-})
-
+const run = document.getElementById('run')
+const clear = document.getElementById('clear')
 const mutateCheckbox = document.getElementById('mutate')
-function mutationSetup(_win, doc) {
-  const style = doc.createElement('style')
-  style.textContent = '#target { filter: hue-rotate(90deg); }'
-  doc.head.appendChild(style)
+function setBusy(busy) {
+  for (const control of [run, clear, mutateCheckbox]) control.disabled = busy
 }
 
-for (const url of components) {
-  const name = baseName(url)
-  const fullUrl = url.startsWith('/') || /^https?:/.test(url)
-    ? url
-    : `${FOLDER}/${url.replace(/^\.\//, '')}`
-  runner.test(name, async () => {
-    const iframeCanvas = await captureFromIframe(iframe, fullUrl, {
-      target: ['#target', 'body'],
-      wait: 80,
-      snapdomUrl: SNAPDOM_URL,
-      snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
-      setup: mutateCheckbox.checked ? mutationSetup : undefined,
+try {
+  const [{ snapdom }, { createRunner, Reporter }, { captureFromIframe }, components] = await Promise.all([
+    import(SNAPDOM_URL),
+    import('./lib/snapdiff.mjs'),
+    import('./lib/iframe-capture.js'),
+    listComponents(),
+  ])
+  renderStatus(`${components.length} components ready. Run tests to capture them.`)
+
+  const iframe = document.createElement('iframe')
+  iframe.className = 'test-frame'
+  iframe.tabIndex = -1
+  iframe.setAttribute('aria-hidden', 'true')
+  document.body.appendChild(iframe)
+
+  const runner = createRunner({
+    snapdom,
+    namespace: 'components-demo',
+    threshold: 0.1,
+    failureRatio: 0.005,
+  })
+
+  function mutationSetup(_win, doc) {
+    const style = doc.createElement('style')
+    style.textContent = '#target { filter: hue-rotate(90deg); }'
+    doc.head.appendChild(style)
+  }
+
+  for (const url of components) {
+    const name = baseName(url)
+    const componentPath = url.startsWith('/') || /^https?:/.test(url)
+      ? url
+      : `${FOLDER}/${url.replace(/^\.\//, '')}`
+    const fullUrl = new URL(componentPath, location.href).href
+    runner.test(name, async () => {
+      const iframeCanvas = await captureFromIframe(iframe, fullUrl, {
+        target: ['#target', 'body'],
+        wait: 80,
+        snapdomUrl: SNAPDOM_URL,
+        snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
+        setup: mutateCheckbox.checked ? mutationSetup : undefined,
+      })
+      const c = document.createElement('canvas')
+      c.width = iframeCanvas.width
+      c.height = iframeCanvas.height
+      c.getContext('2d').drawImage(iframeCanvas, 0, 0)
+      return c
     })
-    const c = document.createElement('canvas')
-    c.width = iframeCanvas.width
-    c.height = iframeCanvas.height
-    c.getContext('2d').drawImage(iframeCanvas, 0, 0)
-    return c
-  })
-}
+  }
 
-const reporter = new Reporter(runner, { onClose: () => reporter.unmount() })
+  const reporter = new Reporter(runner, { onClose: () => reporter.unmount() })
 
-async function runAll() {
-  renderProgress(0, components.length, 'Running tests')
-  const results = await runner.run({
-    onProgress: ({ index, total, result }) => {
-      renderProgress(index + 1, total, `Tested ${result.name}`)
-    },
-  })
-  reporter.mount()
-  reporter.setResults(results)
-  renderStatus(`Done — ${runner.summary(results).pass}/${results.length} passing.`, results)
-}
+  async function runAll() {
+    setBusy(true)
+    run.textContent = 'Running…'
+    renderProgress(0, components.length, 'Running tests')
+    try {
+      const results = await runner.run({
+        onProgress: ({ index, total, result }) => {
+          renderProgress(index + 1, total, `Tested ${result.name}`)
+        },
+      })
+      reporter.mount()
+      reporter.setResults(results)
+      const summary = runner.summary(results)
+      renderStatus(`${summary.pass} passed, ${summary.fail} failed, ${summary.new} new, ${summary.error} errors.`, results)
+    } catch (error) {
+      renderStatus(`Could not run tests: ${error.message}`)
+    } finally {
+      setBusy(false)
+      run.textContent = 'Run tests'
+    }
+  }
 
-document.getElementById('run').onclick = runAll
-document.getElementById('clear').onclick = async () => {
-  if (!confirm('Delete all baselines for namespace "components-demo"?')) return
-  await runner.store.clear()
-  renderStatus('Baselines cleared. Click Run tests to record fresh ones.')
+  run.onclick = runAll
+  clear.onclick = async () => {
+    if (!confirm('Delete all baselines for namespace "components-demo"?')) return
+    setBusy(true)
+    try {
+      await runner.store.clear()
+      renderStatus('Baselines cleared. Run tests, then save the new baselines in the report.')
+    } catch (error) {
+      renderStatus(`Could not clear baselines: ${error.message}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+  setBusy(false)
+} catch (error) {
+  renderStatus(`Could not load the demo: ${error.message}. Reload to try again.`)
 }
 </script>
 </body>
