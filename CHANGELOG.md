@@ -2,8 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-#### Unreleased
+#### [v0.3.1](https://github.com/zumerlab/snapdiff/compare/v0.3.0...v0.3.1)
 
+> 5 September 2026
+
+- Refactor index.html and shared.css for improved design and functionality [`706a570`](https://github.com/zumerlab/snapdiff/commit/706a570beba9b7edfd202eb6df79cbc58474910c)
+- Add snapDOM v3 compatibility and deterministic capture defaults [`959de6d`](https://github.com/zumerlab/snapdiff/commit/959de6d140e7ad35e4c178a3fe75d0a60500314b)
 - Prepare snapDOM v3 and prerelease compatibility while retaining v2 support and pinning the auto CDN to v2.
 - Share capture defaults across runner, auto, and iframe suites; retain defaults with partial overrides and force fresh v3 captures after CSSOM changes.
 - Add browser integration coverage for installed or local snapDOM builds and document the v3 upgrade and baseline review workflow.
