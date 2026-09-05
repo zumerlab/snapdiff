@@ -102,12 +102,12 @@
 </nav>
 
 <script type="module">
-import { snapdom } from 'https://esm.sh/@zumer/snapdom'
+import { snapdom } from 'https://esm.sh/@zumer/snapdom@2'
 import { createRunner, Reporter } from './lib/snapdiff.mjs'
 import { captureFromIframe } from './lib/iframe-capture.js'
 
 const FOLDER = './components'
-const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom'
+const SNAPDOM_URL = 'https://esm.sh/@zumer/snapdom@2'
 
 async function listComponents() {
   try {
@@ -194,7 +194,7 @@ for (const url of components) {
       target: ['#target', 'body'],
       wait: 80,
       snapdomUrl: SNAPDOM_URL,
-      snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
+      snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
       setup: mutateCheckbox.checked ? mutationSetup : undefined,
     })
     const c = document.createElement('canvas')

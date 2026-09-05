@@ -4,6 +4,7 @@
 
 import { BaselineStore, canvasToBlob, blobToCanvas } from './store.js'
 import { diffCanvas } from './diff.js'
+import { captureCanvas } from './capture.js'
 
 /**
  * @typedef {Object} TestResult
@@ -46,7 +47,7 @@ export function createRunner(options = {}) {
     if (out instanceof HTMLCanvasElement) return out
     if (out instanceof Element) {
       const merged = { ...snapdomOptions, ...(test.options.snapdom ?? {}) }
-      return await snapdom(out, merged).then(r => r.toCanvas())
+      return await captureCanvas(snapdom, out, merged)
     }
     throw new Error(`Test "${test.name}" must return an Element or HTMLCanvasElement`)
   }

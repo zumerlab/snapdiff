@@ -59,6 +59,32 @@ npm install --save-dev @zumer/snapdiff @zumer/snapdom
 
 The script-tag workflow can also be used from a CDN without installing the package. snapDOM is loaded at runtime unless you pass your own URL.
 
+### Preparing for snapDOM v3
+
+snapDiff accepts snapDOM 2.x and 3.x, including v3 prereleases (`^2.0.0 || ^3.0.0-0`). The callable `snapdom` export and `result.toCanvas()` capture path remain the same. The auto bundle stays on the v2 CDN until you choose another version.
+
+Once snapDOM v3 is publicly available, upgrade explicitly:
+
+```sh
+npm install --save-dev @zumer/snapdom@3
+```
+
+For script tags, set `data-snapdom-url="https://esm.sh/@zumer/snapdom@3"` after publication. Self-hosted suites can keep `snapdomUrl: '/dist/snapdom.mjs'` and rebuild that file with v3.
+
+snapDiff keeps `dpr: 1`, `scale: 1`, and `embedFonts: true`, and adds `invalidate: true` so repeated tests capture CSSOM edits such as `sheet.insertRule()` even with v3 memoization. Partial `snapdomOptions` overrides retain the other defaults. Set `invalidate: false` only when deliberately testing snapDOM's memoization behavior.
+
+Review custom capture options before upgrading: v3 gives `width`/`height` precedence over `scale`, removes `fast` and `preCache`, and replaces `filter`/`filterMode` with `exclude`/`excludeMode`. Reverse the predicate: `filter: el => keep(el)` becomes `exclude: el => !keep(el)`.
+
+snapDiff ignores v3's reusable `canvas` output target for its own captures so later tests cannot overwrite earlier results.
+
+Run against existing baselines first and inspect `report.html`; v2 and v3 output can differ. Use `UPDATE_VISUAL=1` only after reviewing the changes.
+
+To check an unpublished v3 build from this repository, compile the sibling snapDOM checkout first, then run:
+
+```sh
+SNAPDOM_TEST_PATH=../snapdom-v3/dist/snapdom.mjs npm run test:snapdom
+```
+
 ---
 
 ## Pure browser
@@ -74,7 +100,7 @@ Drop a script tag, mark elements with `data-snap`, refresh the page.
 
 The first load records baselines in IndexedDB. Later loads compare against those baselines and show a small badge in the bottom-right corner. Open it to review split / slider / diff views, approve changes, export/import baselines, or delete old ones.
 
-snapDOM is loaded dynamically from the esm.sh CDN by default. To self-host it or pin a version, set `data-snapdom-url`.
+snapDOM 2.x is loaded dynamically from the esm.sh CDN by default. To self-host it or select a version, set `data-snapdom-url`.
 
 ### Configuration via `data-*` attrs
 
@@ -85,7 +111,7 @@ snapDOM is loaded dynamically from the esm.sh CDN by default. To self-host it or
 | `data-threshold` | `0.1` | per-pixel YIQ delta |
 | `data-failure-ratio` | `0` | mismatch ratio that flips a test to fail |
 | `data-include-aa` | `false` | count anti-aliased pixels as mismatches |
-| `data-snapdom-url` | esm.sh latest | where to load snapdom from |
+| `data-snapdom-url` | `https://esm.sh/@zumer/snapdom@2` | where to load snapdom from |
 | `data-auto-run` | `true` | run on page load (set `false` for click-to-run) |
 | `data-auto-show` | `false` | open the reporter on every run, not just on failure |
 
@@ -100,7 +126,7 @@ const runner = createRunner({
   namespace: 'my-app',
   threshold: 0.1,
   failureRatio: 0,
-  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
+  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
 })
 
 runner.test('homepage hero', () => document.querySelector('.hero'))
@@ -221,7 +247,7 @@ import { defineDemoSuite } from '@zumer/snapdiff/vitest/suite'
 defineDemoSuite({
   demos: import.meta.glob('/demos/*.html'),
   defaultTarget: ['#target', 'body'],
-  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
+  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
   demoOptions: {
     'login': { target: '#login-form' },
     'modal': { wait: 500 },
@@ -277,7 +303,7 @@ whole suite whichever file finishes last.
 | `defaultTarget` | `['#target', 'body']` | selectors tried in order; `body` always appended |
 | `defaultWait` | `0` | ms to wait after iframe load before capture |
 | `snapdomUrl` | `'/dist/snapdom.mjs'` | URL to snapdom inside each iframe |
-| `snapdomOptions` | `{ dpr: 1, scale: 1, embedFonts: true }` | passed to snapdom for every demo |
+| `snapdomOptions` | `{ dpr: 1, scale: 1, embedFonts: true, invalidate: true }` | merged with defaults and passed to snapdom for every demo |
 | `demoOptions` | `{}` | per-demo overrides keyed by file basename |
 | `viewport` | `{ width: 1280, height: 1024 }` | iframe dimensions |
 
@@ -294,6 +320,7 @@ Visual baselines are only useful if they are reproducible. snapDiff defaults to 
 | `dpr` | `1` | otherwise capture is `devicePixelRatio`-scaled — 2× retina vs 1× headless → all tests fail with `dims differ` |
 | `scale` | `1` | same as DPR — affects output canvas dimensions |
 | `embedFonts` | `true` | otherwise font availability across machines changes layout |
+| `invalidate` | `true` | ensures v3 captures fresh state, including CSSOM changes automatic memo tracking cannot observe |
 | viewport | `1280×1024` | element bounds depend on it |
 
 If you change these between recording and verifying, tests can fail with `dims differ`. snapDiff reports that case explicitly because DPR/scale mismatches are a common source of noisy visual tests.

@@ -22,6 +22,10 @@ Copy `vitest.config.js` from this folder. The only change vs your current config
 
 Copy `__tests__/visual.demos.test.js` into `snapdom/__tests__/`.
 
+The spec loads `/dist/snapdom.mjs`, so compile the snapDOM checkout before running it. This also lets you test an unpublished v3 build without a CDN release. snapDiff retains `dpr: 1`, `scale: 1`, and `embedFonts: true`; `invalidate: true` forces a fresh capture even after CSSOM edits that v3 memoization cannot observe. Per-demo overrides keep the remaining defaults.
+
+When upgrading an existing suite to v3, run against its current baselines and review `report.html` before setting `UPDATE_VISUAL=1`. Rendering can change across major versions. See the [v3 migration notes](../../README.md#preparing-for-snapdom-v3) for custom capture options.
+
 ## 4. First run: record baselines
 
 ```sh

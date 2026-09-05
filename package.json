@@ -36,10 +36,11 @@
   ],
   "scripts": {
     "compile": "node esbuild.config.mjs",
-    "postcompile": "mkdir -p docs/lib && cp dist/snapdiff.mjs dist/snapdiff-auto.js docs/lib/ && cp vitest/iframe-capture.js docs/lib/",
+    "postcompile": "mkdir -p docs/lib && cp dist/snapdiff.mjs dist/snapdiff-auto.js dist/iframe-capture.js docs/lib/",
     "lint": "eslint src vitest __tests__ bin --ext .js",
     "lint:fix": "eslint src vitest __tests__ bin --ext .js --fix",
     "test": "npm run lint:fix && npx vitest run --browser.headless --reporter=verbose",
+    "test:snapdom": "vitest run __tests__/snapdom.integration.test.js --browser.headless --reporter=verbose",
     "test:coverage": "npx vitest run --browser.headless --coverage",
     "demo": "npx serve .",
     "bump:dry": "npx @zumerbox/bump -d",
@@ -48,7 +49,7 @@
     "prebuild": "git add CHANGELOG.md && git commit -m \"Bumped version\" && git push --follow-tags"
   },
   "peerDependencies": {
-    "@zumer/snapdom": ">=2.0.0"
+    "@zumer/snapdom": "^2.0.0 || ^3.0.0-0"
   },
   "peerDependenciesMeta": {
     "@zumer/snapdom": {

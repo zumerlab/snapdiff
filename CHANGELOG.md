@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+#### Unreleased
+
+- Prepare snapDOM v3 and prerelease compatibility while retaining v2 support and pinning the auto CDN to v2.
+- Share capture defaults across runner, auto, and iframe suites; retain defaults with partial overrides and force fresh v3 captures after CSSOM changes.
+- Add browser integration coverage for installed or local snapDOM builds and document the v3 upgrade and baseline review workflow.
+
 #### [v0.3.0](https://github.com/zumerlab/snapdiff/compare/v0.2.2...v0.3.0)
 
 > 27 August 2026

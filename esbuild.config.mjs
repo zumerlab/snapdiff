@@ -79,6 +79,19 @@ async function buildAuto() {
   })
 }
 
+// The docs load this module directly. Bundle its shared capture policy instead
+// of copying a source file whose relative imports point outside docs/lib.
+async function buildIframeCapture() {
+  await build({
+    ...common,
+    entryPoints: ['vitest/iframe-capture.js'],
+    outfile: 'dist/iframe-capture.js',
+    format: 'esm',
+    platform: 'browser',
+    target: ['es2020'],
+  })
+}
+
 async function main() {
   try { rmSync('dist', { recursive: true, force: true }) } catch { /* ok */ }
   await Promise.all([
@@ -86,6 +99,7 @@ async function main() {
     buildESM(),
     buildSubpaths(),
     buildAuto(),
+    buildIframeCapture(),
   ])
 }
 

@@ -95,7 +95,7 @@ function discoverTests(runner, selector) {
  * @param {number} [opts.threshold=0.1]
  * @param {number} [opts.failureRatio=0]
  * @param {boolean} [opts.includeAA=false]
- * @param {string} [opts.snapdomUrl='https://esm.sh/@zumer/snapdom']
+ * @param {string} [opts.snapdomUrl='https://esm.sh/@zumer/snapdom@2']
  * @param {object} [opts.snapdomOptions] passed to snapdom for every capture
  * @param {boolean} [opts.autoRun=true]   run on bootstrap
  * @param {boolean} [opts.autoShow=false] mount the reporter even when no failures
@@ -109,8 +109,8 @@ export async function bootstrap(opts = {}) {
     threshold = 0.1,
     failureRatio = 0,
     includeAA = false,
-    snapdomUrl = 'https://esm.sh/@zumer/snapdom',
-    snapdomOptions = { dpr: 1, scale: 1, embedFonts: true },
+    snapdomUrl = 'https://esm.sh/@zumer/snapdom@2',
+    snapdomOptions = {},
     autoRun = true,
     autoShow = false,
   } = opts

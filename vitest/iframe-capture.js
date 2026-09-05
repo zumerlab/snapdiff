@@ -1,5 +1,7 @@
 // Loads a demo HTML in a same-origin iframe, injects snapdom, runs capture.
 
+import { captureCanvas } from '../src/capture.js'
+
 export async function captureFromIframe(iframe, url, opts = {}) {
   const {
     target = ['#target', 'body'],
@@ -40,8 +42,7 @@ export async function captureFromIframe(iframe, url, opts = {}) {
   if (!el) throw new Error(`No target found in ${url}. Tried: ${selectors.join(', ')}. Add an override in demoOptions["${baseName(url)}"].target.`)
 
   // Run snapdom inside the iframe so styles/fonts are read from its document.
-  const result = await win.__snapDiffSnapdom__(el, snapdomOptions)
-  const canvas = await result.toCanvas()
+  const canvas = await captureCanvas(win.__snapDiffSnapdom__, el, snapdomOptions)
   canvas.dataset && (canvas.dataset.target = matched)
   return canvas
 }

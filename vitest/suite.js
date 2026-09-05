@@ -39,10 +39,9 @@ export function defineDemoSuite(options) {
     defaultTarget = ['#target', 'body'],
     defaultWait = 0,
     snapdomUrl = '/dist/snapdom.mjs',
-    // Pin dpr/scale by default so baselines are portable across machines and
-    // headed/headless runs. Override per-demo or globally if you want sharper
-    // captures, but use the SAME value when recording and verifying.
-    snapdomOptions = { dpr: 1, scale: 1, embedFonts: true },
+    // captureFromIframe applies portable defaults after global/per-demo options
+    // are merged, including invalidate:true for snapDOM V3's capture memo.
+    snapdomOptions = {},
     demoOptions = {},
     skip,
     updateBaselines = readUpdateFlag(),

@@ -24,8 +24,9 @@ defineDemoSuite({
   defaultWait: 200,
   snapdomUrl: '/dist/snapdom.mjs',
   // dpr: 1 / scale: 1 → baselines portable across headed/headless and retina/non-retina.
-  // If you want sharper baselines, set dpr: 2 here AND make sure CI runs with retina too.
-  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true },
+  // Use the same explicit DPR locally and in CI when recording sharper baselines.
+  // invalidate: true captures CSSOM edits even with snapDOM v3's automatic memoization.
+  snapdomOptions: { dpr: 1, scale: 1, embedFonts: true, invalidate: true },
   viewport: { width: 1280, height: 1024 },
 
   // Per-demo overrides for demos that don't use #target or need a delay.
